@@ -1,126 +1,128 @@
-import { pgTable, serial, text, varchar, integer, timestamp, decimal, boolean, primaryKey, AnyPgColumn } from 'drizzle-orm/pg-core';
-import { Many, relations } from 'drizzle-orm';
+import { pgTable, serial, text, varchar, integer, timestamp, decimal, boolean, primaryKey, AnyPgColumn, json } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
 // Table definitions
 export const users = pgTable('users', {
   userId: serial('user_id').primaryKey(),
-  name: varchar('name'),
-  email: varchar('email'),
-  password: varchar('password'),
+  name: varchar('name').notNull(),
+  email: varchar('email').notNull().unique(),
+  password: varchar('password').notNull(),
   bio: text('bio'),
-  memberId: integer('memberid').references(() => members.memberId)
+  memberId: integer('memberid').unique().references(() => members.memberId)
 });
 
 export const members = pgTable('members', {
   memberId: serial('memberid').primaryKey(),
-  name: varchar('name'),
-  email: varchar('email'),
-  password: varchar('password')
+  name: varchar('name').notNull(),
+  email: varchar('email').unique().notNull(),
+  password: varchar('password').notNull()
 });
 
 export const roles = pgTable('roles', {
   roleId: serial('role_id').primaryKey(),
-  name: varchar('name'),
+  name: varchar('name').notNull().unique(),
   description: text('description')
 });
 
 export const userRoles = pgTable('userroles', {
-  userId: integer('user_id').references(() => users.userId),
-  roleId: integer('role_id').references(() => roles.roleId)
+  userId: integer('user_id').notNull().references(() => users.userId),
+  roleId: integer('role_id').notNull().references(() => roles.roleId)
 }, (t) => ({
   pk: primaryKey(t.userId, t.roleId)
 }));
 
 export const permissions = pgTable('permissions', {
   permissionId: serial('permission_id').primaryKey(),
-  name: varchar('name'),
+  name: varchar('name').notNull().unique(),
   description: text('description')
 });
 
 export const rolePermissions = pgTable('rolepermissions', {
-  permissionId: integer('permission_id').references(() => permissions.permissionId),
-  roleId: integer('role_id').references(() => roles.roleId)
+  permissionId: integer('permission_id').notNull().references(() => permissions.permissionId),
+  roleId: integer('role_id').notNull().references(() => roles.roleId)
 }, (t) => ({
   pk: primaryKey(t.permissionId, t.roleId)
 }));
 
 export const follows = pgTable('follows', {
-  followerId: integer('follower_id').references(() => members.memberId),
-  entityId: integer('entity_id'), //references user or tag
-  type: varchar('type'),
-  createdAt: timestamp('created_at')
-});
+  followerId: integer('follower_id').notNull().references(() => members.memberId),
+  entityId: integer('entity_id').notNull(), //references user or tag
+  type: varchar('type').notNull(),
+  createdAt: timestamp('created_at').notNull()
+}, (t) => ({
+  pk: primaryKey(t.followerId, t.entityId, t.type)
+}));
 
 export const posts = pgTable('posts', {
   postId: serial('post_id').primaryKey(),
-  title: varchar('title'),
-  userId: integer('userid').references(() => users.userId),
-  publishedDate: timestamp('published_date'),
-  version: integer('version')
+  title: varchar('title').notNull(),
+  userId: integer('userid').notNull().references(() => users.userId),
+  publishedDate: timestamp('published_date').notNull(),
+  version: integer('version').notNull().unique()
 });
 
 export const contentVersions = pgTable('contentversions', {
   versionId: serial('version_id').primaryKey(),
-  postId: integer('post_id').references(()=>posts.postId),
-  type: varchar('type'),
-  updateAt: timestamp('update_at'),
-  contentPath: varchar('content_path'),
-  publishedStatus: boolean('published_status'),
-  isFeatured: boolean('is_featured'),
-  metadata: text('metadata')
+  postId: integer('post_id').notNull().references(()=>posts.postId),
+  type: varchar('type').notNull(),
+  updateAt: timestamp('update_at').notNull(),
+  contentPath: varchar('content_path').notNull().unique(),
+  publishedStatus: boolean('published_status').notNull(),
+  isFeatured: boolean('is_featured').notNull(),
+  metadata: json('metadata')
 });
 
 export const comments = pgTable('comments', {
   commentId: serial('comment_id').primaryKey(),
-  postId: integer('post_id').references(() => posts.postId),
-  memberId: integer('memberid').references(() => members.memberId),
-  createdAt: timestamp('created_at'),
+  postId: integer('post_id').notNull().references(() => posts.postId),
+  memberId: integer('memberid').notNull().references(() => members.memberId),
+  createdAt: timestamp('created_at').notNull(),
   parentComment: integer('parent_comment').references((): AnyPgColumn => users.userId),
-  text: text('text')
+  text: text('text').notNull()
 });
 
 export const tags = pgTable('tags', {
   tagId: serial('tag_id').primaryKey(),
-  name: varchar('name')
+  name: varchar('name').notNull().unique()
 });
 
 export const tagsToPosts = pgTable('tagstoposts', {
-  tagId: integer('tag_id').references(()=>tags.tagId),
-  postId: integer('post_id').references(()=>posts.postId)
+  tagId: integer('tag_id').notNull().references(()=>tags.tagId),
+  postId: integer('post_id').notNull().references(()=>posts.postId)
 }, (t) => ({
   pk: primaryKey(t.tagId, t.postId)
 }));
 
 export const slugs = pgTable('slugs', {
   slugId: serial('slug_id').primaryKey(),
-  entityId: integer('entity_id'), //references post or tag
-  slug: varchar('slug'),
-  type: varchar('type')
+  entityId: integer('entity_id').notNull(), //references post or tag
+  slug: varchar('slug').notNull().unique(),
+  type: varchar('type').notNull()
 });
 
 export const assets = pgTable('assets', {
   assetId: serial('assetid').primaryKey(),
-  type: varchar('type'),
-  contentPath: varchar('content_path'),
-  fileType: varchar('file_type'),
-  fileSize: decimal('file_size'),
-  width: decimal('width'),
-  height: decimal('height'),
+  type: varchar('type').notNull(),
+  contentPath: varchar('content_path').notNull(),
+  fileType: varchar('file_type').notNull(),
+  fileSize: decimal('file_size', {precision:8,scale:3}).notNull(),
+  width: decimal('width', {precision:10,scale:4}),
+  height: decimal('height', {precision:10,scale:4}),
   title: varchar('title'),
   alt: text('alt')
 });
 
 export const postReads = pgTable('postreads', {
-  postId: integer('post_id').references(()=>posts.postId),
-  postVersion: integer('post_version').references(()=>contentVersions.versionId),
-  memberId: integer('memberid').references(()=>members.memberId)
+  postId: integer('post_id').notNull().references(()=>posts.postId),
+  postVersion: integer('post_version').notNull().references(()=>contentVersions.versionId),
+  memberId: integer('memberid').notNull().references(()=>members.memberId)
 }, (t) => ({
   pk: primaryKey(t.postId, t.postVersion, t.memberId)
 }));
 
 export const postAssets = pgTable('postassets', {
-  postId: integer('post_id').references(()=>posts.postId),
-  assetId: integer('assetid').references(()=>assets.assetId)
+  postId: integer('post_id').notNull().references(()=>posts.postId),
+  assetId: integer('assetid').notNull().references(()=>assets.assetId)
 }, (t) => ({
   pk: primaryKey(t.postId, t.assetId)
 }));
