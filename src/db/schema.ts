@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, integer, timestamp, decimal, boolean, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, varchar, integer, timestamp, decimal, boolean, primaryKey, AnyPgColumn } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Table definitions
@@ -75,7 +75,7 @@ export const comments = pgTable('comments', {
   postId: integer('post_id'),
   memberId: integer('memberid'),
   createdAt: timestamp('created_at'),
-  parentComment: integer('parent_comment'),
+  parentComment: integer('parent_comment').references((): AnyPgColumn => users.userId),
   text: text('text')
 });
 
@@ -155,32 +155,32 @@ export const membersRelations = relations(members, ({ one, many }) => ({
 // Complete the rest of the relation definitions following the foreign key constraints provided by the ALTER TABLE SQL statements.
 
 // UserRoles relations
-export const userRolesRelations = relations(userRoles, ({ manyToOne }) => ({
+export const userRolesRelations = relations(userRoles, ({ one }) => ({
   user: one(users, {
     fields: [userRoles.userId],
     references: [users.userId],
   }),
-  role: manyToOne(roles, {
+  role: one(roles, {
     fields: [userRoles.roleId],
     references: [roles.roleId],
   })
 }));
 
 // RolePermissions relations
-export const rolePermissionsRelations = relations(rolePermissions, ({ manyToOne }) => ({
-  role: manyToOne(roles, {
+export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
+  role: one(roles, {
     fields: [rolePermissions.roleId],
     references: [roles.roleId],
   }),
-  permission: manyToOne(permissions, {
+  permission: one(permissions, {
     fields: [rolePermissions.permissionId],
     references: [permissions.permissionId],
   })
 }));
 
 // Follows relations
-export const followsRelations = relations(follows, ({ manyToOne }) => ({
-  follower: manyToOne(users, {
+export const followsRelations = relations(follows, ({ one }) => ({
+  follower: one(users, {
     fields: [follows.followerId],
     references: [users.userId],
   }),
@@ -189,16 +189,16 @@ export const followsRelations = relations(follows, ({ manyToOne }) => ({
 }));
 
 // Posts relations
-export const postsRelations = relations(posts, ({ manyToOne, oneToMany }) => ({
-  user: manyToOne(users, {
+export const postsRelations = relations(posts, ({ one, many }) => ({
+  user: one(users, {
     fields: [posts.userId],
     references: [users.userId],
   }),
-  comments: oneToMany(comments, {
+  comments: many(comments, {
     fields: [posts.postId],
     references: [comments.postId],
   }),
-  contentVersions: oneToMany(contentVersions, {
+  contentVersions: many(contentVersions, {
     fields: [posts.postId],
     references: [contentVersions.postId],
   }),
@@ -210,42 +210,42 @@ export const postsRelations = relations(posts, ({ manyToOne, oneToMany }) => ({
 }));
 
 // ContentVersions relations
-export const contentVersionsRelations = relations(contentVersions, ({ manyToOne }) => ({
-  post: manyToOne(posts, {
+export const contentVersionsRelations = relations(contentVersions, ({ one }) => ({
+  post: one(posts, {
     fields: [contentVersions.postId],
     references: [posts.postId],
   }),
 }));
 
 // Comments relations
-export const commentsRelations = relations(comments, ({ manyToOne, oneToMany }) => ({
-  post: manyToOne(posts, {
+export const commentsRelations = relations(comments, ({ one, many }) => ({
+  post: one(posts, {
     fields: [comments.postId],
     references: [posts.postId],
   }),
-  member: manyToOne(members, {
+  member: one(members, {
     fields: [comments.memberId],
     references: [members.memberId],
   }),
   // Assuming `parentComment` refers to a self-relation on `comments`
-  parentComment: manyToOne(comments, {
+  parentComment: one(comments, {
     fields: [comments.parentComment],
     references: [comments.commentId],
   }),
   // Child comments
-  childComments: oneToMany(comments, {
+  childComments: many(comments, {
     fields: [comments.commentId],
     references: [comments.parentComment],
   }),
 }));
 
 // TagsToPosts relations
-export const tagsToPostsRelations = relations(tagsToPosts, ({ manyToOne }) => ({
-  tag: manyToOne(tags, {
+export const tagsToPostsRelations = relations(tagsToPosts, ({ one }) => ({
+  tag: one(tags, {
     fields: [tagsToPosts.tagId],
     references: [tags.tagId],
   }),
-  post: manyToOne(posts, {
+  post: one(posts, {
     fields: [tagsToPosts.postId],
     references: [posts.postId],
   }),
@@ -259,12 +259,12 @@ export const tagsToPostsRelations = relations(tagsToPosts, ({ manyToOne }) => ({
 // Since there are no foreign keys in the provided SQL, no relations are defined here.
 
 // PostReads relations
-export const postReadsRelations = relations(postReads, ({ manyToOne }) => ({
-  post: manyToOne(posts, {
+export const postReadsRelations = relations(postReads, ({ one }) => ({
+  post: one(posts, {
     fields: [postReads.postId],
     references: [posts.postId],
   }),
-  member: manyToOne(members, {
+  member: one(members, {
     fields: [postReads.memberId],
     references: [members.memberId],
   }),
@@ -272,12 +272,12 @@ export const postReadsRelations = relations(postReads, ({ manyToOne }) => ({
 }));
 
 // PostAssets relations
-export const postAssetsRelations = relations(postAssets, ({ manyToOne }) => ({
-  post: manyToOne(posts, {
+export const postAssetsRelations = relations(postAssets, ({ one }) => ({
+  post: one(posts, {
     fields: [postAssets.postId],
     references: [posts.postId],
   }),
-  asset: manyToOne(assets, {
+  asset: one(assets, {
     fields: [postAssets.assetId],
     references: [assets.assetId],
   }),
