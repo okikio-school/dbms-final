@@ -1,5 +1,5 @@
 import { pgTable, serial, text, varchar, integer, timestamp, decimal, boolean, primaryKey, AnyPgColumn } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { Many, relations } from 'drizzle-orm';
 
 // Table definitions
 export const users = pgTable('users', {
@@ -133,8 +133,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     fields: [users.memberId],
     references: [members.memberId],
   }),
-  posts: many(posts)
-  // other relations would follow a similar pattern
+  posts: many(posts),
+  roles: many(userRoles)
 }));
 
 export const membersRelations = relations(members, ({ one, many }) => ({
@@ -142,8 +142,9 @@ export const membersRelations = relations(members, ({ one, many }) => ({
     fields: [members.memberId],
     references: [users.memberId],
   }),
-  comments: many(comments)
-  // other relations would follow a similar pattern
+  comments: many(comments),
+  follows: many(follows),
+  reads: many(postReads)
 }));
 
 // Complete the rest of the relation definitions following the foreign key constraints provided by the ALTER TABLE SQL statements.
@@ -191,14 +192,16 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
   comments: many(comments),
   contentVersions: many(contentVersions),
   tags: many(tagsToPosts)
+  //slugs use entity ids and must be determined by user logic
 }));
 
 // ContentVersions relations
-export const contentVersionsRelations = relations(contentVersions, ({ one }) => ({
+export const contentVersionsRelations = relations(contentVersions, ({ one, many }) => ({
   post: one(posts, {
     fields: [contentVersions.postId],
     references: [posts.postId],
   }),
+  reads: many(postReads)
 }));
 
 // Comments relations
@@ -211,7 +214,7 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
     fields: [comments.memberId],
     references: [members.memberId],
   }),
-  // Assuming `parentComment` refers to a self-relation on `comments`
+  // Parent comment (self-referential)
   parentComment: one(comments, {
     fields: [comments.parentComment],
     references: [comments.commentId],
@@ -262,6 +265,25 @@ export const postAssetsRelations = relations(postAssets, ({ one }) => ({
     fields: [postAssets.assetId],
     references: [assets.assetId],
   }),
+}));
+
+export const rolesRelations = relations(roles, ({ many }) => ({
+  permissions: many(rolePermissions),
+  users: many(userRoles)
+}));
+
+export const permissionsRelations = relations(permissions, ({ many }) => ({
+  roles: many(rolePermissions)
+}));
+
+export const tagsRelations = relations(tags, ({ many }) => ({
+  posts: many(tagsToPosts)
+  //slug relations are done logically
+  //follows relations are done logically
+}));
+
+export const assetsRelations = relations(assets, ({ many }) => ({
+  posts: many(postAssets)
 }));
 
 // Note: The actual implementation of these relations will depend on the specifics of the Drizzle ORM and how it handles relations.
