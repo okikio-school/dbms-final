@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, integer, timestamp, decimal, boolean, primaryKey, AnyPgColumn, json } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, serial, text, varchar, integer, timestamp, decimal, boolean, primaryKey, AnyPgColumn, json } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Table definitions
@@ -44,10 +44,11 @@ export const rolePermissions = pgTable('rolepermissions', {
   pk: primaryKey(t.permissionId, t.roleId)
 }));
 
+export const followtype = pgEnum('type', ['user', 'tag']);
 export const follows = pgTable('follows', {
   followerId: integer('follower_id').notNull().references(() => members.memberId),
   entityId: integer('entity_id').notNull(), //references user or tag
-  type: varchar('type').notNull(),
+  type: followtype('type').notNull(),
   createdAt: timestamp('created_at').notNull()
 }, (t) => ({
   pk: primaryKey(t.followerId, t.entityId, t.type)
@@ -61,10 +62,11 @@ export const posts = pgTable('posts', {
   version: integer('version').notNull().unique()
 });
 
+export const versionType = pgEnum('type', ['post', 'page']);
 export const contentVersions = pgTable('contentversions', {
   versionId: serial('version_id').primaryKey(),
   postId: integer('post_id').notNull().references(()=>posts.postId),
-  type: varchar('type').notNull(),
+  type: versionType('type').notNull(),
   updateAt: timestamp('update_at').notNull(),
   contentPath: varchar('content_path').notNull().unique(),
   publishedStatus: boolean('published_status').notNull(),
@@ -93,13 +95,15 @@ export const tagsToPosts = pgTable('tagstoposts', {
   pk: primaryKey(t.tagId, t.postId)
 }));
 
+export const slugType = pgEnum('type', ['tag', 'post']);
 export const slugs = pgTable('slugs', {
   slugId: serial('slug_id').primaryKey(),
   entityId: integer('entity_id').notNull(), //references post or tag
   slug: varchar('slug').notNull().unique(),
-  type: varchar('type').notNull()
+  type: slugType('type').notNull()
 });
 
+export const assetType = pgEnum('type', ['photo', 'video', 'file']);
 export const assets = pgTable('assets', {
   assetId: serial('assetid').primaryKey(),
   type: varchar('type').notNull(),
