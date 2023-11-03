@@ -133,10 +133,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     fields: [users.memberId],
     references: [members.memberId],
   }),
-  posts: many(posts, {
-    fields: [users.userId],
-    references: [posts.userId],
-  }),
+  posts: many(posts)
   // other relations would follow a similar pattern
 }));
 
@@ -145,10 +142,7 @@ export const membersRelations = relations(members, ({ one, many }) => ({
     fields: [members.memberId],
     references: [users.memberId],
   }),
-  comments: many(comments, {
-    fields: [members.memberId],
-    references: [comments.memberId],
-  }),
+  comments: many(comments)
   // other relations would follow a similar pattern
 }));
 
@@ -194,19 +188,9 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
     fields: [posts.userId],
     references: [users.userId],
   }),
-  comments: many(comments, {
-    fields: [posts.postId],
-    references: [comments.postId],
-  }),
-  contentVersions: many(contentVersions, {
-    fields: [posts.postId],
-    references: [contentVersions.postId],
-  }),
-  tags: many(tagsToPosts, {
-    fields: [posts.postId],
-    references: [tagsToPosts.postId],
-  }),
-  // Assuming there is a relation for postReads and postAssets, define similarly
+  comments: many(comments),
+  contentVersions: many(contentVersions),
+  tags: many(tagsToPosts)
 }));
 
 // ContentVersions relations
@@ -233,10 +217,7 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
     references: [comments.commentId],
   }),
   // Child comments
-  childComments: many(comments, {
-    fields: [comments.commentId],
-    references: [comments.parentComment],
-  }),
+  childComments: many(comments),
 }));
 
 // TagsToPosts relations
