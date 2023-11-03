@@ -8,7 +8,7 @@ export const users = pgTable('users', {
   email: varchar('email'),
   password: varchar('password'),
   bio: text('bio'),
-  memberId: integer('memberid')
+  memberId: integer('memberid').references(() => members.memberId)
 });
 
 export const members = pgTable('members', {
@@ -25,8 +25,8 @@ export const roles = pgTable('roles', {
 });
 
 export const userRoles = pgTable('userroles', {
-  userId: integer('user_id'),
-  roleId: integer('role_id')
+  userId: integer('user_id').references(() => users.userId),
+  roleId: integer('role_id').references(() => roles.roleId)
 }, (t) => ({
   pk: primaryKey(t.userId, t.roleId)
 }));
@@ -38,15 +38,15 @@ export const permissions = pgTable('permissions', {
 });
 
 export const rolePermissions = pgTable('rolepermissions', {
-  permissionId: integer('permission_id'),
-  roleId: integer('role_id')
+  permissionId: integer('permission_id').references(() => permissions.permissionId),
+  roleId: integer('role_id').references(() => roles.roleId)
 }, (t) => ({
   pk: primaryKey(t.permissionId, t.roleId)
 }));
 
 export const follows = pgTable('follows', {
-  followerId: integer('follower_id'),
-  entityId: integer('entity_id'),
+  followerId: integer('follower_id').references(() => members.memberId),
+  entityId: integer('entity_id'), //references user or tag
   type: varchar('type'),
   createdAt: timestamp('created_at')
 });
@@ -54,14 +54,14 @@ export const follows = pgTable('follows', {
 export const posts = pgTable('posts', {
   postId: serial('post_id').primaryKey(),
   title: varchar('title'),
-  userId: integer('userid'),
+  userId: integer('userid').references(() => users.userId),
   publishedDate: timestamp('published_date'),
   version: integer('version')
 });
 
 export const contentVersions = pgTable('contentversions', {
   versionId: serial('version_id').primaryKey(),
-  postId: integer('post_id'),
+  postId: integer('post_id').references(()=>posts.postId),
   type: varchar('type'),
   updateAt: timestamp('update_at'),
   contentPath: varchar('content_path'),
@@ -72,8 +72,8 @@ export const contentVersions = pgTable('contentversions', {
 
 export const comments = pgTable('comments', {
   commentId: serial('comment_id').primaryKey(),
-  postId: integer('post_id'),
-  memberId: integer('memberid'),
+  postId: integer('post_id').references(() => posts.postId),
+  memberId: integer('memberid').references(() => members.memberId),
   createdAt: timestamp('created_at'),
   parentComment: integer('parent_comment').references((): AnyPgColumn => users.userId),
   text: text('text')
@@ -85,15 +85,15 @@ export const tags = pgTable('tags', {
 });
 
 export const tagsToPosts = pgTable('tagstoposts', {
-  tagId: integer('tag_id'),
-  postId: integer('post_id')
+  tagId: integer('tag_id').references(()=>tags.tagId),
+  postId: integer('post_id').references(()=>posts.postId)
 }, (t) => ({
   pk: primaryKey(t.tagId, t.postId)
 }));
 
 export const slugs = pgTable('slugs', {
   slugId: serial('slug_id').primaryKey(),
-  entityId: integer('entity_id'),
+  entityId: integer('entity_id'), //references post or tag
   slug: varchar('slug'),
   type: varchar('type')
 });
@@ -111,16 +111,16 @@ export const assets = pgTable('assets', {
 });
 
 export const postReads = pgTable('postreads', {
-  postId: integer('post_id'),
-  postVersion: integer('post_version'),
-  memberId: integer('memberid')
+  postId: integer('post_id').references(()=>posts.postId),
+  postVersion: integer('post_version').references(()=>contentVersions.versionId),
+  memberId: integer('memberid').references(()=>members.memberId)
 }, (t) => ({
   pk: primaryKey(t.postId, t.postVersion, t.memberId)
 }));
 
 export const postAssets = pgTable('postassets', {
-  postId: integer('post_id'),
-  assetId: integer('assetid')
+  postId: integer('post_id').references(()=>posts.postId),
+  assetId: integer('assetid').references(()=>assets.assetId)
 }, (t) => ({
   pk: primaryKey(t.postId, t.assetId)
 }));
