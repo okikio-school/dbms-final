@@ -1,0 +1,21 @@
+{
+    "sqltools.connections": [
+        {
+            "pgOptions": {
+                "ssl": true
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "PostgreSQL",
+            "name": "Neon DB",
+            "connectString": "postgres://johnh-otu:du1yILr5jkze@ep-throbbing-dew-91305119.us-east-2.aws.neon.tech/cms"
+        },
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "PostgreSQL",
+            "connectString": "postgresql://postgres:9RMPoTybqqzSjOdV@db.txkvdtwjqlgpipeqidzf.supabase.co:5432/postgres",
+            "name": "Supabase DB"
+        }
+    ]
+}
