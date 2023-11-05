@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 
-import { comments, members, permissions, rolePermissions, roles, slugs, userRoles, users } from "./schema.ts";
+import { assets, comments, members, permissions, rolePermissions, roles, slugs, userRoles, users } from "./schema.ts";
 import { db, sql } from "./db.ts";
 
 const rolesData: (typeof roles.$inferInsert)[] = [
@@ -159,6 +159,17 @@ const main = async () => {
       slug: faker.lorem.slug(),
       type,
       entityId: 0
+    })
+  }
+
+  const assetsData: (typeof assets.$inferInsert)[] = [];
+  for (let i = 0 ; i < 10; i ++) {
+    assetsData.push({
+      type: "image",
+      fileType: "image/jpeg",
+      fileSize: "10",
+      assetId: i,
+      contentPath: "https://images.pexels.com/photos/18937801/pexels-photo-18937801/free-photo-of-wanna-play-football-or-drone.jpeg"
     })
   }
 
