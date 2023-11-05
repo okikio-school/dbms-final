@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 
-import { assets, members, permissions, rolePermissions, roles, slugs, userRoles, users } from "./schema.ts";
+import { assets, comments, members, permissions, rolePermissions, roles, slugs, userRoles, users } from "./schema.ts";
 import { db, sql } from "./db.ts";
 
 const rolesData: (typeof roles.$inferInsert)[] = [
@@ -134,7 +134,6 @@ const main = async () => {
   }
 
   const membersData: (typeof members.$inferInsert)[] = [];
-
   for (let i = 0; i < 10; i++) {
     membersData.push({
       name: faker.internet.displayName(),
@@ -171,6 +170,18 @@ const main = async () => {
       fileSize: "10",
       assetId: i,
       contentPath: "https://images.pexels.com/photos/18937801/pexels-photo-18937801/free-photo-of-wanna-play-football-or-drone.jpeg"
+    })
+  }
+
+  const commentsData: (typeof comments.$inferInsert)[] = [];
+  for (let i = 0; i < 10; i++) {
+    commentsData.push({
+      postId: i, // postData[i].postId!,
+      memberId: membersData[i].memberId!,
+      createdAt: new Date(),
+      text: faker.lorem.paragraphs(),
+      commentId: i,
+      parentComment: i === 0 ? null : 0
     })
   }
 
