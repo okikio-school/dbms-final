@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 
-import { assets, comments, members, permissions, rolePermissions, roles, slugs, userRoles, users } from "./schema.ts";
+import { assets, comments, members, permissions, postAssets, rolePermissions, roles, slugs, userRoles, users } from "./schema.ts";
 import { db, sql } from "./db.ts";
 
 const rolesData: (typeof roles.$inferInsert)[] = [
@@ -185,6 +185,13 @@ const main = async () => {
     })
   }
 
+  const postToAssetsData: (typeof postAssets.$inferInsert)[] = [];
+  for (let i = 0; i < 10; i++) {
+    postToAssetsData.push({
+      postId: i, // postData[i].postId!,
+      assetId: assetsData[i].assetId!,
+    })
+  }
   
 
   console.log("Seed start");
