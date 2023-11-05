@@ -1,0 +1,938 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "id": "8c8aa4ca-b085-4f1d-952c-e2be3e02bf6a",
+  "prevId": "027a6654-29ae-4cbf-8664-379148bad86b",
+  "tables": {
+    "assets": {
+      "name": "assets",
+      "schema": "",
+      "columns": {
+        "assetid": {
+          "name": "assetid",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_path": {
+          "name": "content_path",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_type": {
+          "name": "file_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_size": {
+          "name": "file_size",
+          "type": "numeric(8, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "width": {
+          "name": "width",
+          "type": "numeric(10, 4)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height": {
+          "name": "height",
+          "type": "numeric(10, 4)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alt": {
+          "name": "alt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "comments": {
+      "name": "comments",
+      "schema": "",
+      "columns": {
+        "comment_id": {
+          "name": "comment_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "memberid": {
+          "name": "memberid",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_comment": {
+          "name": "parent_comment",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "text": {
+          "name": "text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "comments_post_id_posts_post_id_fk": {
+          "name": "comments_post_id_posts_post_id_fk",
+          "tableFrom": "comments",
+          "tableTo": "posts",
+          "columnsFrom": [
+            "post_id"
+          ],
+          "columnsTo": [
+            "post_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "comments_memberid_members_memberid_fk": {
+          "name": "comments_memberid_members_memberid_fk",
+          "tableFrom": "comments",
+          "tableTo": "members",
+          "columnsFrom": [
+            "memberid"
+          ],
+          "columnsTo": [
+            "memberid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "comments_parent_comment_users_user_id_fk": {
+          "name": "comments_parent_comment_users_user_id_fk",
+          "tableFrom": "comments",
+          "tableTo": "users",
+          "columnsFrom": [
+            "parent_comment"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "contentversions": {
+      "name": "contentversions",
+      "schema": "",
+      "columns": {
+        "version_id": {
+          "name": "version_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "type",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "update_at": {
+          "name": "update_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_path": {
+          "name": "content_path",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "published_status": {
+          "name": "published_status",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_featured": {
+          "name": "is_featured",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "contentversions_post_id_posts_post_id_fk": {
+          "name": "contentversions_post_id_posts_post_id_fk",
+          "tableFrom": "contentversions",
+          "tableTo": "posts",
+          "columnsFrom": [
+            "post_id"
+          ],
+          "columnsTo": [
+            "post_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "contentversions_content_path_unique": {
+          "name": "contentversions_content_path_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "content_path"
+          ]
+        }
+      }
+    },
+    "follows": {
+      "name": "follows",
+      "schema": "",
+      "columns": {
+        "follower_id": {
+          "name": "follower_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "type",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "follows_follower_id_members_memberid_fk": {
+          "name": "follows_follower_id_members_memberid_fk",
+          "tableFrom": "follows",
+          "tableTo": "members",
+          "columnsFrom": [
+            "follower_id"
+          ],
+          "columnsTo": [
+            "memberid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "follows_follower_id_entity_id_type": {
+          "name": "follows_follower_id_entity_id_type",
+          "columns": [
+            "follower_id",
+            "entity_id",
+            "type"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "members": {
+      "name": "members",
+      "schema": "",
+      "columns": {
+        "memberid": {
+          "name": "memberid",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "members_email_unique": {
+          "name": "members_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      }
+    },
+    "permissions": {
+      "name": "permissions",
+      "schema": "",
+      "columns": {
+        "permission_id": {
+          "name": "permission_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "permissions_name_unique": {
+          "name": "permissions_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      }
+    },
+    "postassets": {
+      "name": "postassets",
+      "schema": "",
+      "columns": {
+        "post_id": {
+          "name": "post_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assetid": {
+          "name": "assetid",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "postassets_post_id_posts_post_id_fk": {
+          "name": "postassets_post_id_posts_post_id_fk",
+          "tableFrom": "postassets",
+          "tableTo": "posts",
+          "columnsFrom": [
+            "post_id"
+          ],
+          "columnsTo": [
+            "post_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "postassets_assetid_assets_assetid_fk": {
+          "name": "postassets_assetid_assets_assetid_fk",
+          "tableFrom": "postassets",
+          "tableTo": "assets",
+          "columnsFrom": [
+            "assetid"
+          ],
+          "columnsTo": [
+            "assetid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "postassets_post_id_assetid": {
+          "name": "postassets_post_id_assetid",
+          "columns": [
+            "post_id",
+            "assetid"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "postreads": {
+      "name": "postreads",
+      "schema": "",
+      "columns": {
+        "post_id": {
+          "name": "post_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "post_version": {
+          "name": "post_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "memberid": {
+          "name": "memberid",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "postreads_post_id_posts_post_id_fk": {
+          "name": "postreads_post_id_posts_post_id_fk",
+          "tableFrom": "postreads",
+          "tableTo": "posts",
+          "columnsFrom": [
+            "post_id"
+          ],
+          "columnsTo": [
+            "post_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "postreads_post_version_contentversions_version_id_fk": {
+          "name": "postreads_post_version_contentversions_version_id_fk",
+          "tableFrom": "postreads",
+          "tableTo": "contentversions",
+          "columnsFrom": [
+            "post_version"
+          ],
+          "columnsTo": [
+            "version_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "postreads_memberid_members_memberid_fk": {
+          "name": "postreads_memberid_members_memberid_fk",
+          "tableFrom": "postreads",
+          "tableTo": "members",
+          "columnsFrom": [
+            "memberid"
+          ],
+          "columnsTo": [
+            "memberid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "postreads_post_id_post_version_memberid": {
+          "name": "postreads_post_id_post_version_memberid",
+          "columns": [
+            "post_id",
+            "post_version",
+            "memberid"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "posts": {
+      "name": "posts",
+      "schema": "",
+      "columns": {
+        "post_id": {
+          "name": "post_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userid": {
+          "name": "userid",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "published_date": {
+          "name": "published_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "posts_userid_users_user_id_fk": {
+          "name": "posts_userid_users_user_id_fk",
+          "tableFrom": "posts",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userid"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "posts_version_unique": {
+          "name": "posts_version_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "version"
+          ]
+        }
+      }
+    },
+    "rolepermissions": {
+      "name": "rolepermissions",
+      "schema": "",
+      "columns": {
+        "permission_id": {
+          "name": "permission_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role_id": {
+          "name": "role_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "rolepermissions_permission_id_permissions_permission_id_fk": {
+          "name": "rolepermissions_permission_id_permissions_permission_id_fk",
+          "tableFrom": "rolepermissions",
+          "tableTo": "permissions",
+          "columnsFrom": [
+            "permission_id"
+          ],
+          "columnsTo": [
+            "permission_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "rolepermissions_role_id_roles_role_id_fk": {
+          "name": "rolepermissions_role_id_roles_role_id_fk",
+          "tableFrom": "rolepermissions",
+          "tableTo": "roles",
+          "columnsFrom": [
+            "role_id"
+          ],
+          "columnsTo": [
+            "role_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "rolepermissions_permission_id_role_id": {
+          "name": "rolepermissions_permission_id_role_id",
+          "columns": [
+            "permission_id",
+            "role_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "roles": {
+      "name": "roles",
+      "schema": "",
+      "columns": {
+        "role_id": {
+          "name": "role_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "roles_name_unique": {
+          "name": "roles_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      }
+    },
+    "slugs": {
+      "name": "slugs",
+      "schema": "",
+      "columns": {
+        "slug_id": {
+          "name": "slug_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "type",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "slugs_slug_unique": {
+          "name": "slugs_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      }
+    },
+    "tags": {
+      "name": "tags",
+      "schema": "",
+      "columns": {
+        "tag_id": {
+          "name": "tag_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tags_name_unique": {
+          "name": "tags_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      }
+    },
+    "tagstoposts": {
+      "name": "tagstoposts",
+      "schema": "",
+      "columns": {
+        "tag_id": {
+          "name": "tag_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tagstoposts_tag_id_tags_tag_id_fk": {
+          "name": "tagstoposts_tag_id_tags_tag_id_fk",
+          "tableFrom": "tagstoposts",
+          "tableTo": "tags",
+          "columnsFrom": [
+            "tag_id"
+          ],
+          "columnsTo": [
+            "tag_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tagstoposts_post_id_posts_post_id_fk": {
+          "name": "tagstoposts_post_id_posts_post_id_fk",
+          "tableFrom": "tagstoposts",
+          "tableTo": "posts",
+          "columnsFrom": [
+            "post_id"
+          ],
+          "columnsTo": [
+            "post_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "tagstoposts_tag_id_post_id": {
+          "name": "tagstoposts_tag_id_post_id",
+          "columns": [
+            "tag_id",
+            "post_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "userroles": {
+      "name": "userroles",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role_id": {
+          "name": "role_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "userroles_user_id_users_user_id_fk": {
+          "name": "userroles_user_id_users_user_id_fk",
+          "tableFrom": "userroles",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "userroles_role_id_roles_role_id_fk": {
+          "name": "userroles_role_id_roles_role_id_fk",
+          "tableFrom": "userroles",
+          "tableTo": "roles",
+          "columnsFrom": [
+            "role_id"
+          ],
+          "columnsTo": [
+            "role_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "userroles_user_id_role_id": {
+          "name": "userroles_user_id_role_id",
+          "columns": [
+            "user_id",
+            "role_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "memberid": {
+          "name": "memberid",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "users_memberid_members_memberid_fk": {
+          "name": "users_memberid_members_memberid_fk",
+          "tableFrom": "users",
+          "tableTo": "members",
+          "columnsFrom": [
+            "memberid"
+          ],
+          "columnsTo": [
+            "memberid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        },
+        "users_memberid_unique": {
+          "name": "users_memberid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "memberid"
+          ]
+        }
+      }
+    }
+  },
+  "enums": {
+    "type": {
+      "name": "type",
+      "values": {
+        "post": "post",
+        "page": "page"
+      }
+    }
+  },
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}

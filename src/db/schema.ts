@@ -60,7 +60,7 @@ export const posts = pgTable('posts', {
   title: varchar('title').notNull(),
   userId: integer('userid').notNull().references(() => users.userId),
   publishedDate: timestamp('published_date').notNull(),
-  version: integer('version').notNull().unique()
+  version: integer('version').unique()
 });
 
 export const versionType = pgEnum('type', ['post', 'page']);
