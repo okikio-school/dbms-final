@@ -7,9 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "migration:generate": "drizzle-kit generate:pg --schema=./src/db/schema.ts",
-    "migration:push": "tsx src/db/db.ts",
-    "migrate": "drizzle-kit generate:pg --schema=./src/db/schema.ts && tsx src/db/db.ts"
+    "drizzle:generate": "drizzle-kit generate:pg",
+    "drizzle:push": "drizzle-kit push:pg",
+    "drizzle:seed": "tsx ./src/db/seed.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.6.0",
@@ -27,6 +27,7 @@
     "autoprefixer": "^10.0.1",
     "dotenv": "^16.3.1",
     "drizzle-kit": "^0.19.13",
+    "nanoid": "^5.0.2",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
     "tsx": "^3.14.0",

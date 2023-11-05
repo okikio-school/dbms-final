@@ -1,11 +1,8 @@
 import type { Config } from "drizzle-kit";
-import * as dotenv from "dotenv";
-dotenv.config();
+import { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, PGPORT } from "./src/env.ts";
 
-let { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, ENDPOINT_ID } = process.env;
- 
 export default {
-  schema: "./src/schema.ts",
+  schema: "./src/db/schema.ts",
   out: "./drizzle",
   driver: 'pg',
   dbCredentials: {
@@ -13,7 +10,7 @@ export default {
     database: PGDATABASE!,
     user: PGUSER!,
     password: PGPASSWORD!,
-    port: 5432,
-    ssl: true,
+    port: PGPORT!,
+    ssl: false,
   }
 } satisfies Config;

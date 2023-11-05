@@ -1,7 +1,6 @@
 import { db } from "@/db/db";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 
-//migrate:push - pushes to Neon
 async function main() {
     console.log("migration started...");
     await migrate(db, {migrationsFolder:"drizzle"});

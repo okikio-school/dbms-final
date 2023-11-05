@@ -1,4 +1,5 @@
-import { pgTable, pgEnum, serial, text, varchar, integer, timestamp, decimal, boolean, primaryKey, AnyPgColumn, json } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, serial, text, varchar, integer, timestamp, decimal, boolean, primaryKey, json } from 'drizzle-orm/pg-core';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Table definitions
