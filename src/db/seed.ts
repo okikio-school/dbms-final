@@ -1,7 +1,9 @@
 import { faker } from "@faker-js/faker";
 
-import { assets, comments, members, permissions, postAssets, rolePermissions, roles, slugs, userRoles, users } from "./schema.ts";
+import { assets, comments, contentVersions, follows, members, permissions, postAssets, postReads, posts, rolePermissions, roles, slugs, tags, tagsToPosts, userRoles, users } from "./schema.ts";
 import { db, sql } from "./db.ts";
+import { randomInt } from "crypto";
+import { desc, eq } from "drizzle-orm";
 
 const rolesData: (typeof roles.$inferInsert)[] = [
   {
@@ -122,7 +124,7 @@ const rolesToPermissionsData: (typeof rolePermissions.$inferInsert)[] = [
 
 const main = async () => {
   const usersData: (typeof users.$inferInsert)[] = [];
-
+  
   for (let i = 0; i < 10; i++) {
     usersData.push({
       name: faker.person.fullName(),
@@ -131,6 +133,45 @@ const main = async () => {
       bio: faker.person.bio(),
       userId: i,
     });
+  }
+
+  const tagsdata: (typeof tags.$inferInsert)[] = [];
+  for (let i = 0; i < 10; i++) {
+    tagsdata.push({
+      tagId: i,
+      name: faker.company.buzzNoun(),
+    })
+  }
+
+  const postsdata: (typeof posts.$inferInsert)[] = [];
+  for (let i = 0; i < 6; i++) {
+    postsdata.push({
+      postId: i,
+      title: faker.lorem.words(randomInt(1, 8)),
+      userId: randomInt(0,10),
+      publishedDate: new Date(),
+    })
+  }
+
+  const versionsdata: (typeof contentVersions.$inferInsert)[] = [];
+  for (let i = 0; i < 10; i++) {
+    versionsdata.push({
+      versionId: 0,
+      postId: randomInt(0, 6),
+      updateAt: new Date(),
+      publishedStatus: Boolean(randomInt(0,2)),
+      type: "post",
+      isFeatured: Boolean(randomInt(0,2)),
+      contentPath: faker.image.url(),
+    });
+  }
+
+  const userrolesdata: (typeof userRoles.$inferInsert)[] = [];
+  for (let i = 0; i < 10; i++) {
+    userrolesdata.push({
+      userId: i,
+      roleId: randomInt(0, 6)
+    })
   }
 
   const membersData: (typeof members.$inferInsert)[] = [];
@@ -143,12 +184,40 @@ const main = async () => {
     });
   }
 
-  const usersToRolesData: (typeof userRoles.$inferInsert)[] = [];
-  for (const user of usersData) {
-    usersToRolesData.push({
-      roleId: 4,
-      userId: +user.userId!
-    })
+  const followsData: (typeof follows.$inferInsert)[] = [];
+  var typenumber;
+  for (let i = 0; i < 12; i++) {
+    typenumber = randomInt(0, 2);
+    if (typenumber == 0) {
+      // user follow
+      followsData.push({
+        followerId: randomInt(0, 10),
+        type: "user",
+        entityId: randomInt(0, 10),
+        createdAt: new Date(),
+      });
+    } else {
+      // tag follow
+      followsData.push({
+        followerId: randomInt(0, 10),
+        type: "tag",
+        entityId: randomInt(0, 6),
+        createdAt: new Date(),
+      });
+    }
+  }
+
+  const tagstopostsdata: (typeof tagsToPosts.$inferInsert)[] = [];
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 10; j++) {
+      var bUse = Boolean(randomInt(0,2));
+      if (bUse) {
+        tagstopostsdata.push({
+          postId: i,
+          tagId: j
+        });
+      }
+    }
   }
 
   const slugData: (typeof slugs.$inferInsert)[] = [];
@@ -195,12 +264,24 @@ const main = async () => {
   
 
   console.log("Seed start");
-  await db.insert(users).values(usersData);
-  await db.insert(members).values(membersData);
-  await db.insert(roles).values(rolesData);
-  await db.insert(permissions).values(permissionsData);
-  await db.insert(rolePermissions).values(rolesToPermissionsData);
-  await db.insert(userRoles).values(usersToRolesData);
+  await db.transaction(async (tx) => {
+    await tx.insert(users).values(usersData);
+    await tx.insert(members).values(membersData);
+    await tx.insert(posts).values(postsdata);
+    await tx.insert(contentVersions).values(versionsdata);
+    await tx.insert(roles).values(rolesData);
+    await tx.insert(permissions).values(permissionsData);
+    await tx.insert(rolePermissions).values(rolesToPermissionsData);
+    await tx.insert(userRoles).values(userrolesdata);
+    await tx.insert(tags).values(tagsdata);
+    await tx.insert(tagsToPosts).values(tagstopostsdata);
+    await tx.insert(assets).values(assetsData);
+    await tx.insert(follows).values(followsData);
+    await tx.insert(postAssets).values(postToAssetsData);
+    await tx.insert(comments).values(commentsData);
+    await tx.insert(slugs).values(slugData);
+  })
+  await db.insert(postReads).values(await generatePostReadsData());
   console.log("Seed done");
 };
 
@@ -210,3 +291,23 @@ const main = async () => {
 })();
 
 //https://anasrin.vercel.app/blog/seeding-database-with-drizzle-orm/
+
+async function generatePostReadsData() {
+  const postreadsdata: (typeof postReads.$inferInsert)[] = [];
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 10; j++) {
+      var bUse = Boolean(randomInt(0,2));
+      if (bUse) {
+        var result = await db.select({
+          id: contentVersions.versionId
+        }).from(contentVersions).where(eq(contentVersions.postId, i)).orderBy(desc(contentVersions.updateAt));
+        postreadsdata.push({
+          postId: i,
+          memberId: j,
+          postVersion: result[0].id
+        });
+      }
+    }
+  }
+  return postreadsdata;
+}
