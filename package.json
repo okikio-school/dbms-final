@@ -9,7 +9,7 @@
     "lint": "next lint",
     "drizzle:generate": "drizzle-kit generate:pg",
     "drizzle:push": "drizzle-kit push:pg",
-    "drizzle:seed": "tsx ./src/db/seed.ts"
+    "drizzle:seed": "tsx ./scripts/seed.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.6.0",
@@ -28,6 +28,7 @@
     "dotenv": "^16.3.1",
     "drizzle-kit": "^0.19.13",
     "nanoid": "^5.0.2",
+    "pg": "^8.11.3",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
     "tsx": "^3.14.0",

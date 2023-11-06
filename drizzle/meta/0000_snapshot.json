@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "pg",
-  "id": "027a6654-29ae-4cbf-8664-379148bad86b",
+  "id": "777f5768-1c76-4697-9845-8c6c4d0089b2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "assets": {
@@ -16,7 +16,7 @@
         },
         "type": {
           "name": "type",
-          "type": "varchar",
+          "type": "asset_type",
           "primaryKey": false,
           "notNull": true
         },
@@ -172,7 +172,7 @@
         },
         "type": {
           "name": "type",
-          "type": "type",
+          "type": "version_type",
           "primaryKey": false,
           "notNull": true
         },
@@ -252,7 +252,7 @@
         },
         "type": {
           "name": "type",
-          "type": "type",
+          "type": "follow_type",
           "primaryKey": false,
           "notNull": true
         },
@@ -535,7 +535,7 @@
           "name": "version",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         }
       },
       "indexes": {},
@@ -682,7 +682,7 @@
         },
         "type": {
           "name": "type",
-          "type": "type",
+          "type": "slug_type",
           "primaryKey": false,
           "notNull": true
         }
@@ -921,8 +921,30 @@
     }
   },
   "enums": {
-    "type": {
-      "name": "type",
+    "asset_type": {
+      "name": "asset_type",
+      "values": {
+        "photo": "photo",
+        "video": "video",
+        "file": "file"
+      }
+    },
+    "follow_type": {
+      "name": "follow_type",
+      "values": {
+        "user": "user",
+        "tag": "tag"
+      }
+    },
+    "slug_type": {
+      "name": "slug_type",
+      "values": {
+        "tag": "tag",
+        "post": "post"
+      }
+    },
+    "version_type": {
+      "name": "version_type",
       "values": {
         "post": "post",
         "page": "page"

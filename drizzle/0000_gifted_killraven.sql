@@ -1,12 +1,30 @@
 DO $$ BEGIN
- CREATE TYPE "type" AS ENUM('post', 'page');
+ CREATE TYPE "asset_type" AS ENUM('photo', 'video', 'file');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "follow_type" AS ENUM('user', 'tag');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "slug_type" AS ENUM('tag', 'post');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ CREATE TYPE "version_type" AS ENUM('post', 'page');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "assets" (
 	"assetid" serial PRIMARY KEY NOT NULL,
-	"type" varchar NOT NULL,
+	"type" "asset_type" NOT NULL,
 	"content_path" varchar NOT NULL,
 	"file_type" varchar NOT NULL,
 	"file_size" numeric(8, 3) NOT NULL,
@@ -28,7 +46,7 @@ CREATE TABLE IF NOT EXISTS "comments" (
 CREATE TABLE IF NOT EXISTS "contentversions" (
 	"version_id" serial PRIMARY KEY NOT NULL,
 	"post_id" integer NOT NULL,
-	"type" "type" NOT NULL,
+	"type" "version_type" NOT NULL,
 	"update_at" timestamp NOT NULL,
 	"content_path" varchar NOT NULL,
 	"published_status" boolean NOT NULL,
@@ -40,7 +58,7 @@ CREATE TABLE IF NOT EXISTS "contentversions" (
 CREATE TABLE IF NOT EXISTS "follows" (
 	"follower_id" integer NOT NULL,
 	"entity_id" integer NOT NULL,
-	"type" "type" NOT NULL,
+	"type" "follow_type" NOT NULL,
 	"created_at" timestamp NOT NULL,
 	CONSTRAINT follows_follower_id_entity_id_type PRIMARY KEY("follower_id","entity_id","type")
 );
@@ -78,7 +96,7 @@ CREATE TABLE IF NOT EXISTS "posts" (
 	"title" varchar NOT NULL,
 	"userid" integer NOT NULL,
 	"published_date" timestamp NOT NULL,
-	"version" integer NOT NULL,
+	"version" integer,
 	CONSTRAINT "posts_version_unique" UNIQUE("version")
 );
 --> statement-breakpoint
@@ -99,7 +117,7 @@ CREATE TABLE IF NOT EXISTS "slugs" (
 	"slug_id" serial PRIMARY KEY NOT NULL,
 	"entity_id" integer NOT NULL,
 	"slug" varchar NOT NULL,
-	"type" "type" NOT NULL,
+	"type" "slug_type" NOT NULL,
 	CONSTRAINT "slugs_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint

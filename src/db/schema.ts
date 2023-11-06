@@ -1,5 +1,6 @@
-import { pgTable, pgEnum, serial, text, varchar, integer, timestamp, decimal, boolean, primaryKey, json } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
+
+import { pgTable, pgEnum, serial, text, varchar, integer, timestamp, decimal, boolean, primaryKey, json } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Table definitions
@@ -45,7 +46,7 @@ export const rolePermissions = pgTable('rolepermissions', {
   pk: primaryKey(t.permissionId, t.roleId)
 }));
 
-export const followtype = pgEnum('type', ['user', 'tag']);
+export const followtype = pgEnum('follow_type', ['user', 'tag']);
 export const follows = pgTable('follows', {
   followerId: integer('follower_id').notNull().references(() => members.memberId),
   entityId: integer('entity_id').notNull(), //references user or tag
@@ -63,7 +64,7 @@ export const posts = pgTable('posts', {
   version: integer('version').unique()
 });
 
-export const versionType = pgEnum('type', ['post', 'page']);
+export const versionType = pgEnum('version_type', ['post', 'page']);
 export const contentVersions = pgTable('contentversions', {
   versionId: serial('version_id').primaryKey(),
   postId: integer('post_id').notNull().references(()=>posts.postId),
@@ -96,7 +97,7 @@ export const tagsToPosts = pgTable('tagstoposts', {
   pk: primaryKey(t.tagId, t.postId)
 }));
 
-export const slugType = pgEnum('type', ['tag', 'post']);
+export const slugType = pgEnum('slug_type', ['tag', 'post']);
 export const slugs = pgTable('slugs', {
   slugId: serial('slug_id').primaryKey(),
   entityId: integer('entity_id').notNull(), //references post or tag
@@ -104,10 +105,10 @@ export const slugs = pgTable('slugs', {
   type: slugType('type').notNull()
 });
 
-export const assetType = pgEnum('type', ['photo', 'video', 'file']);
+export const assetType = pgEnum('asset_type', ['photo', 'video', 'file']);
 export const assets = pgTable('assets', {
   assetId: serial('assetid').primaryKey(),
-  type: varchar('type').notNull(),
+  type: assetType('type').notNull(),
   contentPath: varchar('content_path').notNull(),
   fileType: varchar('file_type').notNull(),
   fileSize: decimal('file_size', {precision:8,scale:3}).notNull(),
@@ -150,7 +151,9 @@ export const membersRelations = relations(members, ({ one, many }) => ({
     references: [users.memberId],
   }),
   comments: many(comments),
-  follows: many(follows),
+  follows: many(follows, {
+    relationName: "memberFollows"
+  }),
   reads: many(postReads)
 }));
 
@@ -185,6 +188,7 @@ export const followsRelations = relations(follows, ({ one }) => ({
   follower: one(users, {
     fields: [follows.followerId],
     references: [users.userId],
+    relationName: "memberFollows"
   }),
   // Assuming `entityId` in follows can refer to different types of entities,
   // You might need a conditional or polymorphic relation here, which is not a standard feature and would require custom logic.
@@ -208,7 +212,9 @@ export const contentVersionsRelations = relations(contentVersions, ({ one, many 
     fields: [contentVersions.postId],
     references: [posts.postId],
   }),
-  reads: many(postReads)
+  reads: many(postReads, {
+    relationName: "contentVersionsRead"
+  })
 }));
 
 // Comments relations
@@ -225,9 +231,15 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
   parentComment: one(comments, {
     fields: [comments.parentComment],
     references: [comments.commentId],
+    relationName: 'commentsRelation' // Specify a unique relation name
   }),
   // Child comments
-  childComments: many(comments),
+  childComments: many(comments, {
+    // fields: [comments.commentId], // The field on the current table to match on
+    // references: [comments.parentComment], // The field on the related table to match
+    // If necessary, specify additional details for the relation
+    relationName: 'commentsRelation' // Specify a unique relation name
+  }),
 }));
 
 // TagsToPosts relations
@@ -259,6 +271,11 @@ export const postReadsRelations = relations(postReads, ({ one }) => ({
     fields: [postReads.memberId],
     references: [members.memberId],
   }),
+  contentVersion: one(contentVersions, {
+    fields: [postReads.postVersion],
+    references: [contentVersions.versionId],
+    relationName: "contentVersionsRead"
+  })
   // This assumes there is also a relation to a post version, which should be set if your model supports this.
 }));
 
