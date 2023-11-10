@@ -5,13 +5,13 @@ import { getUsers } from "@/lib/actions";
 import { UserCard } from "./user-card";
 import useSWR from 'swr'
 
-export function ListUsers() {
+export function ListUsers({ initialList }: { initialList: typeof users.$inferSelect[] }) {
   const { data: list, error, isLoading } = useSWR('/api/list-users', async () => {
     return await getUsers()
-  })
+  }, { fallbackData: initialList })
  
   if (error) return <div>failed to load</div>;
-  if (isLoading) return <div>loading...</div>;
+  if (isLoading && (!list || list?.length <= 0)) return <div>loading...</div>;
 
   return <div className="grid md:grid-cols-2 lg:grid-cols-3 p-4 gap-3">{
     list?.map((x) => { 
