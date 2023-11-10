@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentProps } from "react";
-import { BellRing, Check, PencilIcon } from "lucide-react"
+import { PencilIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -19,13 +18,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { Input } from "@/components/ui/input"
 import { useState } from "react"
 
 import type { users } from "@/db/schema";
-import { getUsers } from "@/lib/actions";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { EditForm } from "@/components/edit-card";
 
 type CardProps = ComponentProps<typeof Card> & { user: typeof users.$inferSelect }

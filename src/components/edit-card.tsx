@@ -38,7 +38,12 @@ export function EditForm({ user }: { user: typeof users.$inferSelect }) {
     resolver: zodResolver(FormSchema),
   });
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
+   function onSubmit(data: z.infer<typeof FormSchema>) {
+    // e.preventDefault();
+    console.log({
+      // e,
+      data
+    })
     toast({
       title: "You submitted the following values:",
       description: (
@@ -48,15 +53,17 @@ export function EditForm({ user }: { user: typeof users.$inferSelect }) {
       ),
     });
   
-    await updateUserData(user.userId, user);
-    mutate("/api/list-users")
+    (async () => {
+      await updateUserData(user.userId, data as typeof users.$inferInsert);
+      mutate("/api/list-users")
+    })()
   }
 
   return (
     <Card className="px-3 py-3 bg-secondary border-transparent">
       <Form {...form}>
         <form
-          onSubmit={() => form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(onSubmit)}
           className="w-full space-y-6"
         >
           <FormField

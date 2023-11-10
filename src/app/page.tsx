@@ -1,6 +1,6 @@
 import { ListUsers } from "@/components/list-users";
 
-export default async function Home() {
+export default function Home() {
   return (
     <div>
       <ListUsers />

@@ -7,7 +7,7 @@ import { cache } from "react";
 
 // export const revalidate = 360;
 export const getUsers = cache(async function getUsers() {
-  return await db.select().from(users);
+  return await db.select().from(users).orderBy(users.userId);
 })
 
 export const updateUserData = cache(async function setUserData(userId: typeof users.$inferInsert.userId, { name, bio }: typeof users.$inferInsert) {
