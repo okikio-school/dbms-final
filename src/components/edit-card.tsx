@@ -39,11 +39,6 @@ export function EditForm({ user }: { user: typeof users.$inferSelect }) {
   });
 
    function onSubmit(data: z.infer<typeof FormSchema>) {
-    // e.preventDefault();
-    console.log({
-      // e,
-      data
-    })
     toast({
       title: "You submitted the following values:",
       description: (
