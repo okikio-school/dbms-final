@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
 import { Suspense } from 'react'
 import './globals.css'
+import { Navbar } from '@/components/navbar'
  
 export const fontSans = FontSans({
   subsets: ["latin"],
@@ -29,6 +30,7 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
+        <Navbar/>
         <Suspense>
           {children}
         </Suspense>
