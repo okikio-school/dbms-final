@@ -3,6 +3,7 @@
 import type { users } from "@/db/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { PencilIcon } from "lucide-react";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -17,12 +18,22 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
-import { cn } from "@/lib/utils";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 import { updateUserData } from "@/lib/actions";
-import { mutate } from 'swr'
+import { mutate } from "swr";
 
 const FormSchema = z.object({
   name: z.string().min(3, {
@@ -38,97 +49,101 @@ export function EditForm({ user }: { user: typeof users.$inferSelect }) {
     resolver: zodResolver(FormSchema),
   });
 
-   function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  
+  function onSubmit(data: z.infer<typeof FormSchema>) {
     (async () => {
+      try {
       await updateUserData(user.userId, data as typeof users.$inferInsert);
-      mutate("/api/list-users")
-    })()
+      mutate("/api/list-users");
+      toast({
+        title: "Success! You submitted the following values:",
+        description: (
+          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+            <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+          </pre>
+        ),
+      });
+      } catch (e) {
+        toast({
+          title: "Error! We hit a snag while saving the values:",
+          description: (
+            <pre className="mt-2 w-[340px] rounded-md bg-red-950 p-4">
+              <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+            </pre>
+          ),
+        });
+      }
+    })();
   }
 
   return (
-    <Card className="px-3 py-3 bg-secondary border-transparent">
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full space-y-6"
-        >
-          <FormField
-            control={form.control}
-            name="name"
-            defaultValue={user.name}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="John Doe..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="bio"
-            defaultValue={user.bio!}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Bio</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Tell us a little bit about yourself"
-                    className="resize-none"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  You can <span>@mention</span> other users and organizations.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit">Submit</Button>
-        </form>
-      </Form>
-    </Card>
-  );
-}
+    <Dialog>
+      <DialogTrigger asChild>        
+        <Button variant="secondary" size="sm" className="flex gap-2 px-3">
+          <PencilIcon className="h-4 w-4" />
+          <span>Edit Profile</span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
+            <DialogHeader>
+              <DialogTitle>Edit profile</DialogTitle>
+              <DialogDescription>
+                Make changes to users profile here. Click save when you're done.
+              </DialogDescription>
+            </DialogHeader>
 
-export function EditCard() {
-  return (
-    <Card className="w-[350px] pt-5 bg-secondary border-transparent">
-      <CardContent>
-        <form>
-          <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="name" className={cn("text-black/60")}>
-                Name
-              </Label>
-              <Input id="name" placeholder="Name of your project" />
+            <div className="grid gap-4 py-4">
+              <FormField
+                control={form.control}
+                name="name"
+                defaultValue={user.name}
+                render={({ field }) => (
+                  <FormItem className="flex flex-col gap-1">
+                    <FormLabel>Name</FormLabel>
+                    
+                    <div className="space-y-4">
+                      <FormControl>
+                        <Input placeholder="John Doe..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="bio"
+                defaultValue={user.bio!}
+                render={({ field }) => (
+                  <FormItem className="flex flex-col gap-1">
+                    <FormLabel>Bio</FormLabel>
+                    
+                    <div className="space-y-4">
+                      <FormControl>
+                        <Textarea
+                          placeholder="Tell us a little bit about this person."
+                          className="resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription></FormDescription>
+                      <FormMessage />
+                    </div>
+                  </FormItem>
+                )}
+              />
             </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="bio" className={cn("text-black/60")}>
-                Bio
-              </Label>
-              <Textarea id="bio" placeholder="Type your message here." />
-            </div>
-          </div>
-        </form>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button variant="outline">Cancel</Button>
-        <Button>Save</Button>
-      </CardFooter>
-    </Card>
+            
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="submit">Save changes</Button>
+              </DialogClose>   
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }

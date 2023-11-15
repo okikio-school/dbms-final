@@ -7,7 +7,6 @@ import { cache } from "react";
 
 const prepared = db.select().from(users).orderBy(users.userId).prepare("list_users");
 
-// export const revalidate = 360;
 export const getUsers = cache(async function getUsers() {
   return await prepared.execute();
 })
