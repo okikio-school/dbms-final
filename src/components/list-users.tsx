@@ -10,8 +10,8 @@ export function ListUsers({ initialList }: { initialList: typeof users.$inferSel
     return await getUsers()
   }, { fallbackData: initialList })
  
-  if (error) return <div>failed to load</div>;
-  if (isLoading && (!list || list?.length <= 0)) return <div>loading...</div>;
+  if (error) return <div>Failed to load</div>;
+  if (isLoading && (!list || list?.length <= 0)) return <div>Loading...</div>;
 
   return <div className="grid md:grid-cols-2 lg:grid-cols-3 p-4 gap-3">{
     list?.map((x) => { 

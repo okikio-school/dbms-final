@@ -52,8 +52,12 @@ export function EditForm({ user }: { user: typeof users.$inferSelect }) {
   function onSubmit(data: z.infer<typeof FormSchema>) {
     (async () => {
       try {
-      await updateUserData(user.userId, data as typeof users.$inferInsert);
-      mutate("/api/list-users");
+        mutate("/api/list-users", (currentData: NonNullable<typeof users.$inferSelect>[] = []) => {
+          return currentData.map(item =>
+            item.userId === user.userId ? { ...item, ...(data as typeof users.$inferInsert) } : item
+          );
+        }, false);
+        await updateUserData(user.userId, data as typeof users.$inferInsert);
       toast({
         title: "Success! You submitted the following values:",
         description: (
