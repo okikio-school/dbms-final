@@ -39,7 +39,7 @@ import Link from "next/link"
 
 export function Navbar() {
     return (
-        <NavigationMenu className="flex">
+        <NavigationMenu className="flex max-w-full w-full">
             <NavigationMenuList>
                 <NavigationMenuItem>
                     <Link href="/" legacyBehavior passHref>
@@ -52,6 +52,7 @@ export function Navbar() {
                     </Link>
                 </NavigationMenuItem>
             </NavigationMenuList>
+            <div className="flex flex-grow"></div>
             <NavigationMenuList className="flex justify-end">
                 <NavigationMenuItem>
                     <Command>
