@@ -13,6 +13,8 @@ import {
 
 import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu"
 
+import { Input } from "@/components/ui/input"
+
 import Link from "next/link"
 
 export function Navbar() {
@@ -30,7 +32,7 @@ export function Navbar() {
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <p>SEARCHBAR</p>
+                    <Input type="text" placeholder="Search" />
                 </NavigationMenuItem>
             </NavigationMenuList>
         </NavigationMenu>
