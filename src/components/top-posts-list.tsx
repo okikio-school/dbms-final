@@ -1,7 +1,7 @@
 'use client';
 
-import type { posts } from "@/db/schema";
 import { getTopPosts } from "@/lib/actions";
+import { PostCard } from "./post-card";
 import useSWR from 'swr'
 
 export function TopPostsList({ initialList }: { initialList: Awaited<ReturnType<typeof getTopPosts>>}) {
@@ -13,12 +13,12 @@ export function TopPostsList({ initialList }: { initialList: Awaited<ReturnType<
   if (isLoading && (!list || list?.length <= 0)) return <div>Loading...</div>;
 
   return (
-    <div>
-        {
-            list?.map((x) => { 
-                return <p>{x.title.toString()}</p>
-              })
-        }
-    </div>
+    <>
+      {
+        list?.map((x) => { 
+          return <PostCard key={x.id} author={x.author} title={x.title} ratio={3}/>
+        })
+      }
+    </>
   );
 }

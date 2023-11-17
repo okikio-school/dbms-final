@@ -2,13 +2,25 @@
 
 import { db } from "@/db/db"
 import { users, posts, postReads, contentVersions } from "@/db/schema"
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, gt, sql } from "drizzle-orm";
+import { PostgresJsPreparedQuery } from "drizzle-orm/postgres-js";
 import { cache } from "react";
 
 //================================= PREP =====================================================
 
 //all users
 const usersprep = db.select().from(users).orderBy(users.userId).prepare("list_users");
+
+//all posts
+const postsprep = db.select({
+  id: posts.postId, 
+  title: posts.title, 
+  author: users.name, 
+  date: posts.publishedDate
+}).from(posts)
+  .leftJoin(users, eq(posts.userId, users.userId))
+  .orderBy(desc(posts.publishedDate))
+  .prepare("list_posts");
 
 //top posts
 const reads = sql<number>`cast(count(${postReads.postId}) as int)`;
@@ -22,6 +34,7 @@ const toppostsprep = db.select({
   .leftJoin(postReads, eq(posts.postId, postReads.postId))
   .leftJoin(users, eq(users.userId, posts.userId))
   .groupBy(posts.postId, posts.title, users.name, posts.publishedDate)
+  .having(gt(reads, 0))
   .orderBy(desc(reads))
   .prepare("list_top_posts");
 
@@ -58,4 +71,9 @@ export const getTopPosts = cache(async function getTopPosts() {
 //featured posts
 export const getFeaturedPosts = cache(async function getFeaturedPosts() {
   return await featuredpostsprep.execute();
+})
+
+//all posts
+export const getPosts = cache(async function getPosts() {
+  return await postsprep.execute();
 })

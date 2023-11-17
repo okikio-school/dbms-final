@@ -1,7 +1,7 @@
 'use client';
 
-import type { posts } from "@/db/schema";
 import { getFeaturedPosts } from "@/lib/actions";
+import { PostCard } from "./post-card";
 import useSWR from 'swr'
 
 export function FeaturedPost({ initialList }: { initialList: Awaited<ReturnType<typeof getFeaturedPosts>>}) {
@@ -13,10 +13,6 @@ export function FeaturedPost({ initialList }: { initialList: Awaited<ReturnType<
   if (isLoading && (!list || list?.length <= 0)) return <div>Loading...</div>;
 
   return (
-    <div>
-        {
-          <p>{list[0].title}</p>
-        }
-    </div>
+    <PostCard title={list[0].title} author={list[0].author} ratio={16/9} />
   );
 }

@@ -2,6 +2,7 @@
 const nextConfig = {
   images: {
 		remotePatterns: [{ hostname: "images.pexels.com" }],
+		remotePatterns: [{ hostname: "m.media-amazon.com" }],
 	}
 };
 
