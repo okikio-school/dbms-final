@@ -13,6 +13,9 @@
     "drizzle:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@auth/drizzle-adapter": "^0.3.6",
+    "@blocknote/core": "^0.9.6",
+    "@blocknote/react": "^0.9.6",
     "@hookform/resolvers": "^3.3.2",
     "@neondatabase/serverless": "^0.6.0",
     "@radix-ui/react-accordion": "^1.1.2",
@@ -49,6 +52,7 @@
     "framer-motion": "^10.16.5",
     "lucide-react": "^0.292.0",
     "next": "14.0.1",
+    "next-auth": "^4.24.5",
     "postgres": "^3.4.3",
     "react": "^18.2.0",
     "react-day-picker": "^8.9.1",
@@ -61,12 +65,14 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^8.2.0",
+    "@types/mime": "^3.0.4",
     "@types/node": "^20",
     "@types/react": "^18.2.34",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
     "dotenv": "^16.3.1",
     "drizzle-kit": "^0.19.13",
+    "mime": "^3.0.0",
     "nanoid": "^5.0.2",
     "pg": "^8.11.3",
     "postcss": "^8",

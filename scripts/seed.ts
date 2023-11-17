@@ -1,10 +1,12 @@
 // Inspired by https://anasrin.vercel.app/blog/seeding-database-with-drizzle-orm/
-import { assets, comments, contentVersions, follows, members, permissions, postAssets, postReads, posts, rolePermissions, roles, slugs, tags, tagsToPosts, userRoles, users } from "../src/db/schema.ts";
+import { assets, comments, contentVersions, follows, users, permissions, postAssets, postReads, posts, rolePermissions, roles, slugs, tags, tagsToPosts, userRoles, accounts } from "../src/db/schema.ts";
 import { faker } from "@faker-js/faker";
+import mime from "mime/lite";
 
 // Database and SQL utilities import
 import { db, sql } from "@/db/db.ts";
 import { randomInt } from "node:crypto";
+import { generateKey } from "@/lib/passwords.ts";
 
 // Define role data to be inserted into the 'roles' table
 const rolesData: (typeof roles.$inferInsert)[] = [
@@ -32,7 +34,11 @@ const rolesData: (typeof roles.$inferInsert)[] = [
   {
     name: "developer",
     description: "non-admin roles with lots of access for debugging, support, and fixing issues"
-  }
+  },
+  {
+    name: "member",
+    description: "non-staff readers with limited permissions"
+  },
 ];
 
 // Define permission data for the 'permissions' table
@@ -113,6 +119,10 @@ const rolesToPermissionsIndexData = [
   { roleIndex: 5, permissionIndex: 3 },
   { roleIndex: 5, permissionIndex: 5 },
   { roleIndex: 5, permissionIndex: 6 },
+  
+  { roleIndex: 6, permissionIndex: 0 },
+  { roleIndex: 6, permissionIndex: 3 },
+  { roleIndex: 6, permissionIndex: 4 },
 ];
 
 // Define enum types for various features like FollowType, ContentVersionType, etc.
@@ -144,7 +154,8 @@ const main = async () => {
     // Seed tags
     const tagsData: (typeof tags.$inferInsert)[] = []
     for (let i = 0; i < 10; i++) {
-      const [tag] = await tx.insert(tags).values({
+      const [tag] = await tx.insert(tags).values({        
+        tagId: crypto.randomUUID(),
         name: faker.lorem.slug(),
       }).returning();
       tagsData.push(tag)
@@ -176,23 +187,29 @@ const main = async () => {
     
     // Seed members and users
     const usersData: (typeof users.$inferInsert)[] = [];
-    const membersData: (typeof users.$inferInsert)[] = [];
+    const accountsData: (typeof accounts.$inferInsert)[] = [];
     for (let i = 0; i < 10; i++) {
-      const [member] = await tx.insert(members).values({
-        name: faker.internet.displayName(),
-        email: faker.internet.email(),
-        password: faker.internet.password(),
-      }).returning();
-      membersData.push(member);
-
-      const [user] = await tx.insert(users).values({
+      const [user] = await tx.insert(users).values({        
+        userId: crypto.randomUUID(),
         name: faker.person.fullName(),
         email: faker.internet.email(),
-        password: faker.internet.password(),
         bio: faker.person.bio(),
-        memberId: member.memberId
+        image: faker.image.avatar(),
       }).returning();
       usersData.push(user);
+
+      const [account] = await tx.insert(accounts).values({
+        userId: user.userId,
+      
+        // Future proofing our implmentation
+        type: "credentials",
+        provider: "credentials",
+        providerAccountId: user.userId,
+    
+        // The password field stores the base64-encoded string representing the hashed and salted password.
+        password: await generateKey(faker.internet.password(), 1_000_000),
+      }).returning();
+      accountsData.push(account);
     }
 
     // Seed userRoles
@@ -212,6 +229,7 @@ const main = async () => {
     for (let i = 0; i < usersData.length; i ++) {
       const userIndex = i; 
       const [post] = await tx.insert(posts).values({
+        postId: crypto.randomUUID(),
         title: faker.lorem.words(randomInt(1, 8)),
         userId: usersData[userIndex].userId!,
         publishedDate: new Date(),
@@ -222,11 +240,11 @@ const main = async () => {
     // Seed comments
     const commentsData: (typeof comments.$inferInsert)[] = [];
     for (let i = 0; i < 10; i++) {
-      const memeberIndex = randomInt(0, membersData.length - 1);
+      const userIndex = randomInt(0, usersData.length - 1);
       const postIndex = randomInt(0, postsData.length - 1);
       const [comment] = await tx.insert(comments).values({
         postId: postsData[postIndex].postId!,
-        memberId: membersData[memeberIndex].memberId!,
+        userId: usersData[userIndex].userId!,
         createdAt: new Date(),
         text: faker.lorem.paragraphs(),
         parentComment: null
@@ -244,7 +262,9 @@ const main = async () => {
         publishedStatus: faker.datatype.boolean(),
         type: ContentVersionType.Post,
         isFeatured: faker.datatype.boolean(),
-        contentPath: faker.image.url(),
+        content: {
+          markdown: faker.lorem.paragraphs()
+        },
       }).returning();
       versionsData.push(contentVersion);
     }
@@ -267,11 +287,12 @@ const main = async () => {
     // Seed assets
     const assetsData: (typeof assets.$inferInsert)[] = [];
     for (let i = 0 ; i < 10; i ++) {
+      const imageUrl = faker.image.url();
       const [asset] = await tx.insert(assets).values({
         type: AssetType.Photo,
-        fileType: faker.system.mimeType(),
+        fileType: mime.getType(imageUrl)! || "text/plain",
         fileSize: "100",
-        contentPath: faker.image.url()
+        contentPath: imageUrl
       }).returning();
       assetsData.push(asset);
     }
@@ -297,14 +318,14 @@ const main = async () => {
     const followsData: (typeof follows.$inferInsert)[] = [];
     for (let i = 0 ; i < 12; i ++) {
       const type = faker.datatype.boolean() ? FollowType.User : FollowType.Tag;
-      const memberIndex = randomInt(0, membersData.length - 1);
       const userIndex = randomInt(0, usersData.length - 1);
+      const followedIndex = randomInt(0, usersData.length - 1);
       const tagIndex = randomInt(0, tagsData.length - 1);
       const [follow] = await tx.insert(follows).values({
         type,
-        followerId: membersData[memberIndex].memberId!,
+        followerId: usersData[userIndex].userId!,
         entityId: ({
-          [FollowType.User]: usersData[userIndex].userId!,
+          [FollowType.User]: usersData[followedIndex].userId!,
           [FollowType.Tag]: tagsData[tagIndex].tagId!
         })[type],
         createdAt: new Date()
@@ -315,10 +336,10 @@ const main = async () => {
     // Seed post reads
     const postsReadData: (typeof postReads.$inferInsert)[] = [];
     for (const version of versionsData) {
-      const memeberIndex = randomInt(0, membersData.length - 1);
+      const memeberIndex = randomInt(0, usersData.length - 1);
       const [postRead] = await tx.insert(postReads).values({
         postId: version.postId!,
-        memberId: membersData[memeberIndex].memberId!,
+        userId: usersData[memeberIndex].userId!,
         postVersion: version.versionId!
       }).returning();
       postsReadData.push(postRead);
