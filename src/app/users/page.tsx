@@ -4,7 +4,7 @@ import { getUsers } from "@/lib/actions";
 const initialList = await getUsers();
 export default function Home() {
   return (
-    <div>
+    <div className="pt-24 px-2">
       <ListUsers initialList={initialList} />
     </div>
   );

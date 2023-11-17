@@ -8,7 +8,7 @@ const Editor = dynamic(() => import("@/components/editor.tsx"), { ssr: false });
 export default function EditorPage() {
   // Renders the editor instance using a React component.
   return (
-    <div className="py-48 mx-auto max-w-screen-md">
+    <div className="pt-48 pb-24 mx-auto max-w-screen-md">
       <Button>
         Add Cover
       </Button>
