@@ -23,7 +23,7 @@ export const accounts = pgTable("account", {
     providerAccountId: text("providerAccountId").notNull(),
 
     // The password field stores the base64-encoded string representing the hashed and salted password.
-    password: varchar('password').notNull(),
+    password: varchar('password'),
     refresh_token: text("refresh_token"),
     access_token: text("access_token"),
     expires_at: integer("expires_at"),

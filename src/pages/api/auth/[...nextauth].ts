@@ -1,48 +1,78 @@
-import { db } from "@/db/db";
-import { users } from "@/db/schema";
-import { verifyKey } from "@/lib/passwords";
-import { eq } from "drizzle-orm";
+import type { AdapterSession, VerificationToken } from "next-auth/adapters";
+import type { Account, AuthOptions, User } from "next-auth";
 
-import NextAuth, { type AuthOptions, type User } from "next-auth";
+import { db } from "@/db/db";
+import { eq, and } from "drizzle-orm";
+import { accounts, sessions, users, verificationTokens } from "@/db/schema";
+import { verifyKey } from "@/lib/passwords";
+
+import { DrizzleAdapter } from "@auth/drizzle-adapter"
+import NextAuth from "next-auth";
+
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github"
+import { Users2 } from "lucide-react";
+import { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } from "@/env";
 
-export interface AdapterUser extends Omit<User, "id"> {
-  userId: string
-  email: string
-  emailVerified: Date | null
-}
+export type CustomUser = Omit<User, "id"> & typeof users.$inferSelect;
+export type CustomAccounts = Omit<Account, "id"> & typeof accounts.$inferSelect;
+
+export interface AdapterUser extends CustomUser { }
+export interface AdapterAccount extends CustomAccounts { }
 
 const adapter = {
   async createUser(data: Omit<AdapterUser, "id">) {
+    const userId = crypto.randomUUID();
     const user = await db
       .insert(users)
       .values({ ...data, userId: crypto.randomUUID() })
-      .returning();
+      .returning()
+      .then((res) => res[0] ?? null);
+    console.log({
+      user
+    })
+    if (user) {
+      return { ...user, id: userId }
+    }
     return user;
   },
-  async getUser(data) {
-    return await db
+  async getUser(data: string) {
+    const user = await db
       .select()
       .from(users)
       .where(eq(users.userId, data))
       .then((res) => res[0] ?? null);
+      console.log({
+        getUser: user
+      })
+      return user;
   },
-  async getUserByEmail(data) {
-    return await db
+  async getUserByEmail(data: string) {
+    const user = await db
       .select()
       .from(users)
       .where(eq(users.email, data))
       .then((res) => res[0] ?? null);
+      console.log({
+        getUserByEmail: user
+      })
+      return user;
   },
-  async createSession(data) {
+  async createSession(data: {
+    sessionToken: string
+    userId: string
+    expires: Date
+  }) {
+    console.log({
+      session: data
+    })
     return await db
       .insert(sessions)
       .values(data)
       .returning()
       .then((res) => res[0]);
   },
-  async getSessionAndUser(data) {
+  async getSessionAndUser(data: string) {
     return await db
       .select({
         session: sessions,
@@ -50,22 +80,27 @@ const adapter = {
       })
       .from(sessions)
       .where(eq(sessions.sessionToken, data))
-      .innerJoin(users, eq(users.id, sessions.userId))
+      .innerJoin(users, eq(users.userId, sessions.userId))
       .then((res) => res[0] ?? null);
   },
-  async updateUser(data) {
-    if (!data.id) {
+  async updateUser(data: Partial<AdapterUser> & Pick<AdapterUser, "userId">) {
+    console.log({
+      updateUser: data
+    })
+    // @ts-ignore
+    if (!data.userId && !data.id) {
       throw new Error("No user id.");
     }
 
     return await db
       .update(users)
       .set(data)
-      .where(eq(users.id, data.id))
+      // @ts-ignore
+      .where(eq(users.userId, data.userId ?? data.id))
       .returning()
       .then((res) => res[0]);
   },
-  async updateSession(data) {
+  async updateSession(data: Partial<AdapterSession> & Pick<AdapterSession, "sessionToken">) {
     return await db
       .update(sessions)
       .set(data)
@@ -73,7 +108,10 @@ const adapter = {
       .returning()
       .then((res) => res[0]);
   },
-  async linkAccount(rawAccount) {
+  async linkAccount(rawAccount: AdapterAccount) {
+    console.log({
+      account: rawAccount
+    })
     const updatedAccount = await db
       .insert(accounts)
       .values(rawAccount)
@@ -95,7 +133,7 @@ const adapter = {
 
     return account;
   },
-  async getUserByAccount(account) {
+  async getUserByAccount(account: Pick<AdapterAccount, "provider" | "providerAccountId">) {
     const dbAccount =
       (await db
         .select()
@@ -106,16 +144,21 @@ const adapter = {
             eq(accounts.provider, account.provider)
           )
         )
-        .leftJoin(users, eq(accounts.userId, users.id))
+        .leftJoin(users, eq(accounts.userId, users.userId))
         .then((res) => res[0])) ?? null;
 
     if (!dbAccount) {
       return null;
     }
 
-    return dbAccount.user;
+    if (dbAccount.users) {
+      const user = dbAccount.users;
+      return { ...user, id: user.userId }
+    }
+
+    return dbAccount.users;
   },
-  async deleteSession(sessionToken) {
+  async deleteSession(sessionToken: string) {
     const session = await db
       .delete(sessions)
       .where(eq(sessions.sessionToken, sessionToken))
@@ -124,14 +167,17 @@ const adapter = {
 
     return session;
   },
-  async createVerificationToken(token) {
+  async createVerificationToken(token: VerificationToken) {
     return await db
       .insert(verificationTokens)
       .values(token)
       .returning()
       .then((res) => res[0]);
   },
-  async useVerificationToken(token) {
+  async useVerificationToken(token: {
+    identifier: string
+    token: string
+  }) {
     try {
       return await db
         .delete(verificationTokens)
@@ -147,14 +193,14 @@ const adapter = {
       throw new Error("No verification token found.");
     }
   },
-  async deleteUser(id) {
+  async deleteUser(userId: string) {
     await db
       .delete(users)
-      .where(eq(users.id, id))
+      .where(eq(users.userId, userId))
       .returning()
       .then((res) => res[0] ?? null);
   },
-  async unlinkAccount(account) {
+  async unlinkAccount(account: Pick<AdapterAccount, "provider" | "providerAccountId">) {
     const { type, provider, providerAccountId, userId } = await db
       .delete(accounts)
       .where(
@@ -170,14 +216,14 @@ const adapter = {
   },
 }
 
-export const authOptions: AuthOptions = {
+export const authOptions: Omit<AuthOptions, "adapter"> & { adapter: typeof adapter} = {
   adapter,
   // Configure one or more authentication providers
   providers: [
-    // GitHubProvider({
-    //   clientId: process.env.GITHUB_CLIENT_ID,
-    //   clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    // }),
+    GitHubProvider({
+      clientId: GITHUB_CLIENT_ID!,
+      clientSecret: GITHUB_CLIENT_SECRET!,
+    }),
     // CredentialsProvider({
     //   // The name to display on the sign in form (e.g. 'Sign in with...')
     //   name: "Credentials",
@@ -245,4 +291,4 @@ export const authOptions: AuthOptions = {
   ],
 };
 
-export default NextAuth(authOptions);
+export default NextAuth(authOptions as unknown as AuthOptions);
