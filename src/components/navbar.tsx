@@ -31,7 +31,7 @@ export function Navbar() {
           </Link>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link href="/fyp" legacyBehavior passHref>
+          <Link href="/for-you" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
               For You
             </NavigationMenuLink>

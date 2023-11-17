@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 
 import NextAuth, { type AuthOptions, type User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import GitHubProvider from "next-auth/providers/github"
 
 export interface AdapterUser extends Omit<User, "id"> {
   userId: string
@@ -174,69 +174,73 @@ export const authOptions: AuthOptions = {
   adapter,
   // Configure one or more authentication providers
   providers: [
-    CredentialsProvider({
-      // The name to display on the sign in form (e.g. 'Sign in with...')
-      name: "Credentials",
-      // The credentials is used to generate a suitable form on the sign in page.
-      // You can specify whatever fields you are expecting to be submitted.
-      // e.g. domain, username, password, 2FA token, etc.
-      // You can pass any HTML attribute to the <input> tag through the object.
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials, req) {
-        if (!credentials) return null;
+    // GitHubProvider({
+    //   clientId: process.env.GITHUB_CLIENT_ID,
+    //   clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    // }),
+    // CredentialsProvider({
+    //   // The name to display on the sign in form (e.g. 'Sign in with...')
+    //   name: "Credentials",
+    //   // The credentials is used to generate a suitable form on the sign in page.
+    //   // You can specify whatever fields you are expecting to be submitted.
+    //   // e.g. domain, username, password, 2FA token, etc.
+    //   // You can pass any HTML attribute to the <input> tag through the object.
+    //   credentials: {
+    //     email: { label: "Email", type: "email" },
+    //     password: { label: "Password", type: "password" },
+    //   },
+    //   async authorize(credentials, req) {
+    //     if (!credentials) return null;
 
-        // Fetch user from the database
-        const matchingUsers = await db
-          .select({
-            id: users.userId,
-            email: users.email,
-            password: users.password,
-          })
-          .from(users)
-          .where(eq(users.email, credentials.email))
-          .execute();
+    //     // Fetch user from the database
+    //     const matchingUsers = await db
+    //       .select({
+    //         id: users.userId,
+    //         email: users.email,
+    //         password: users.password,
+    //       })
+    //       .from(users)
+    //       .where(eq(users.email, credentials.email))
+    //       .execute();
 
-        if (!matchingUsers) {
-          throw new Error("No user found with the email");
-        }
+    //     if (!matchingUsers) {
+    //       throw new Error("No user found with the email");
+    //     }
 
-        if (matchingUsers.length > 1) {
-          throw new Error("Too many users found with the email");
-        }
+    //     if (matchingUsers.length > 1) {
+    //       throw new Error("Too many users found with the email");
+    //     }
 
-        // Verify the password
-        const [user] = matchingUsers;
-        const isValid = await verifyKey(credentials.password, user.password);
-        if (!isValid) {
-          throw new Error("Invalid password");
-        }
+    //     // Verify the password
+    //     const [user] = matchingUsers;
+    //     const isValid = await verifyKey(credentials.password, user.password);
+    //     if (!isValid) {
+    //       throw new Error("Invalid password");
+    //     }
 
-        // You need to provide your own logic here that takes the credentials
-        // submitted and returns either a object representing a user or value
-        // that is false/null if the credentials are invalid.
-        // e.g. return { id: 1, name: 'J Smith', email: 'jsmith@example.com' }
-        // You can also use the `req` object to obtain additional parameters
-        // (i.e., the request IP address)
-        // const res = await fetch("/your/endpoint", {
-        //   method: 'POST',
-        //   body: JSON.stringify(credentials),
-        //   headers: { "Content-Type": "application/json" }
-        // })
-        // const user = await res.json()
+    //     // You need to provide your own logic here that takes the credentials
+    //     // submitted and returns either a object representing a user or value
+    //     // that is false/null if the credentials are invalid.
+    //     // e.g. return { id: 1, name: 'J Smith', email: 'jsmith@example.com' }
+    //     // You can also use the `req` object to obtain additional parameters
+    //     // (i.e., the request IP address)
+    //     // const res = await fetch("/your/endpoint", {
+    //     //   method: 'POST',
+    //     //   body: JSON.stringify(credentials),
+    //     //   headers: { "Content-Type": "application/json" }
+    //     // })
+    //     // const user = await res.json()
 
-        // // If no error and we have user data, return it
-        // if (res.ok && user) {
-        //   return user
-        // }
-        // // Return null if user data could not be retrieved
-        // return null
-        // Return user object on successful authentication
-        return { id: user.id + "", email: user.email };
-      },
-    }),
+    //     // // If no error and we have user data, return it
+    //     // if (res.ok && user) {
+    //     //   return user
+    //     // }
+    //     // // Return null if user data could not be retrieved
+    //     // return null
+    //     // Return user object on successful authentication
+    //     return { id: user.id + "", email: user.email };
+    //   },
+    // }),
     // ...add more providers here
   ],
 };

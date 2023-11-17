@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { Navbar } from '@/components/navbar'
 import { cn } from '@/lib/utils'
 
-// import Session from '@/components/session'
+import SessionServer from '@/components/session.server'
 import { Suspense } from 'react'
 import './globals.css'
 
@@ -35,9 +35,9 @@ export default function RootLayout({
       >
         <Navbar />
         <Suspense>
-          {/* <Session> */}
+          <SessionServer>
             {children}
-          {/* </Session> */}
+          </SessionServer>
         </Suspense>
         
         <Toaster />
