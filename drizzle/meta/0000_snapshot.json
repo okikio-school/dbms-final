@@ -1,9 +1,121 @@
 {
   "version": "5",
   "dialect": "pg",
-  "id": "777f5768-1c76-4697-9845-8c6c4d0089b2",
+  "id": "51957b38-1537-4b60-aa6d-171937c20fe5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "account": {
+      "name": "account",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "providerAccountId": {
+          "name": "providerAccountId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "token_type": {
+          "name": "token_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id_token": {
+          "name": "id_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "session_state": {
+          "name": "session_state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "account_user_id_users_user_id_fk": {
+          "name": "account_user_id_users_user_id_fk",
+          "tableFrom": "account",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "account_provider_providerAccountId": {
+          "name": "account_provider_providerAccountId",
+          "columns": [
+            "provider",
+            "providerAccountId"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "account_user_id_unique": {
+          "name": "account_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id"
+          ]
+        }
+      }
+    },
     "assets": {
       "name": "assets",
       "schema": "",
@@ -80,13 +192,13 @@
         },
         "post_id": {
           "name": "post_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "memberid": {
-          "name": "memberid",
-          "type": "integer",
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -124,28 +236,28 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "comments_memberid_members_memberid_fk": {
-          "name": "comments_memberid_members_memberid_fk",
+        "comments_user_id_users_user_id_fk": {
+          "name": "comments_user_id_users_user_id_fk",
           "tableFrom": "comments",
-          "tableTo": "members",
+          "tableTo": "users",
           "columnsFrom": [
-            "memberid"
+            "user_id"
           ],
           "columnsTo": [
-            "memberid"
+            "user_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "comments_parent_comment_users_user_id_fk": {
-          "name": "comments_parent_comment_users_user_id_fk",
+        "comments_parent_comment_comments_comment_id_fk": {
+          "name": "comments_parent_comment_comments_comment_id_fk",
           "tableFrom": "comments",
-          "tableTo": "users",
+          "tableTo": "comments",
           "columnsFrom": [
             "parent_comment"
           ],
           "columnsTo": [
-            "user_id"
+            "comment_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -166,7 +278,7 @@
         },
         "post_id": {
           "name": "post_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -182,11 +294,11 @@
           "primaryKey": false,
           "notNull": true
         },
-        "content_path": {
-          "name": "content_path",
-          "type": "varchar",
+        "content": {
+          "name": "content",
+          "type": "json",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "published_status": {
           "name": "published_status",
@@ -224,15 +336,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "contentversions_content_path_unique": {
-          "name": "contentversions_content_path_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "content_path"
-          ]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "follows": {
       "name": "follows",
@@ -240,13 +344,13 @@
       "columns": {
         "follower_id": {
           "name": "follower_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
         "entity_id": {
           "name": "entity_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -265,15 +369,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "follows_follower_id_members_memberid_fk": {
-          "name": "follows_follower_id_members_memberid_fk",
+        "follows_follower_id_users_user_id_fk": {
+          "name": "follows_follower_id_users_user_id_fk",
           "tableFrom": "follows",
-          "tableTo": "members",
+          "tableTo": "users",
           "columnsFrom": [
             "follower_id"
           ],
           "columnsTo": [
-            "memberid"
+            "user_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -290,48 +394,6 @@
         }
       },
       "uniqueConstraints": {}
-    },
-    "members": {
-      "name": "members",
-      "schema": "",
-      "columns": {
-        "memberid": {
-          "name": "memberid",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email": {
-          "name": "email",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "password": {
-          "name": "password",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "members_email_unique": {
-          "name": "members_email_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
-        }
-      }
     },
     "permissions": {
       "name": "permissions",
@@ -375,7 +437,7 @@
       "columns": {
         "post_id": {
           "name": "post_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -432,7 +494,7 @@
       "columns": {
         "post_id": {
           "name": "post_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -442,9 +504,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "memberid": {
-          "name": "memberid",
-          "type": "integer",
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         }
@@ -477,27 +539,27 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "postreads_memberid_members_memberid_fk": {
-          "name": "postreads_memberid_members_memberid_fk",
+        "postreads_user_id_users_user_id_fk": {
+          "name": "postreads_user_id_users_user_id_fk",
           "tableFrom": "postreads",
-          "tableTo": "members",
+          "tableTo": "users",
           "columnsFrom": [
-            "memberid"
+            "user_id"
           ],
           "columnsTo": [
-            "memberid"
+            "user_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
-        "postreads_post_id_post_version_memberid": {
-          "name": "postreads_post_id_post_version_memberid",
+        "postreads_post_id_post_version_user_id": {
+          "name": "postreads_post_id_post_version_user_id",
           "columns": [
             "post_id",
             "post_version",
-            "memberid"
+            "user_id"
           ]
         }
       },
@@ -509,7 +571,7 @@
       "columns": {
         "post_id": {
           "name": "post_id",
-          "type": "serial",
+          "type": "text",
           "primaryKey": true,
           "notNull": true
         },
@@ -521,7 +583,7 @@
         },
         "userid": {
           "name": "userid",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -658,6 +720,48 @@
         }
       }
     },
+    "session": {
+      "name": "session",
+      "schema": "",
+      "columns": {
+        "sessionToken": {
+          "name": "sessionToken",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires": {
+          "name": "expires",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "session_userId_users_user_id_fk": {
+          "name": "session_userId_users_user_id_fk",
+          "tableFrom": "session",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "slugs": {
       "name": "slugs",
       "schema": "",
@@ -670,7 +774,7 @@
         },
         "entity_id": {
           "name": "entity_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -706,7 +810,7 @@
       "columns": {
         "tag_id": {
           "name": "tag_id",
-          "type": "serial",
+          "type": "text",
           "primaryKey": true,
           "notNull": true
         },
@@ -736,13 +840,13 @@
       "columns": {
         "tag_id": {
           "name": "tag_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
         "post_id": {
           "name": "post_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         }
@@ -793,7 +897,7 @@
       "columns": {
         "user_id": {
           "name": "user_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -850,7 +954,7 @@
       "columns": {
         "user_id": {
           "name": "user_id",
-          "type": "serial",
+          "type": "text",
           "primaryKey": true,
           "notNull": true
         },
@@ -866,41 +970,27 @@
           "primaryKey": false,
           "notNull": true
         },
-        "password": {
-          "name": "password",
-          "type": "varchar",
+        "emailVerified": {
+          "name": "emailVerified",
+          "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "bio": {
           "name": "bio",
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "memberid": {
-          "name": "memberid",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "users_memberid_members_memberid_fk": {
-          "name": "users_memberid_members_memberid_fk",
-          "tableFrom": "users",
-          "tableTo": "members",
-          "columnsFrom": [
-            "memberid"
-          ],
-          "columnsTo": [
-            "memberid"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "users_email_unique": {
@@ -909,15 +999,44 @@
           "columns": [
             "email"
           ]
-        },
-        "users_memberid_unique": {
-          "name": "users_memberid_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "memberid"
-          ]
         }
       }
+    },
+    "verificationToken": {
+      "name": "verificationToken",
+      "schema": "",
+      "columns": {
+        "identifier": {
+          "name": "identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires": {
+          "name": "expires",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "verificationToken_identifier_token": {
+          "name": "verificationToken_identifier_token",
+          "columns": [
+            "identifier",
+            "token"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
     }
   },
   "enums": {

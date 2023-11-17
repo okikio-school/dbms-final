@@ -15,7 +15,7 @@ export const users = pgTable('users', {
 
 // Accounts represent the different types of ways a user can signin
 export const accounts = pgTable("account", {
-    userId: integer('user_id').unique().references(() => users.userId, { onDelete: "cascade" }),
+    userId: text('user_id').unique().references(() => users.userId, { onDelete: "cascade" }),
   
     // Future proofing our implmentation
     type: text("type").$type<AdapterAccount["type"]>().notNull(),
@@ -70,7 +70,7 @@ export const roles = pgTable('roles', {
 });
 
 export const userRoles = pgTable('userroles', {
-  userId: integer('user_id').notNull().references(() => users.userId),
+  userId: text('user_id').notNull().references(() => users.userId),
   roleId: integer('role_id').notNull().references(() => roles.roleId)
 }, (t) => ({
   pk: primaryKey(t.userId, t.roleId)
@@ -91,8 +91,8 @@ export const rolePermissions = pgTable('rolepermissions', {
 
 export const followtype = pgEnum('follow_type', ['user', 'tag']);
 export const follows = pgTable('follows', {
-  followerId: integer('follower_id').notNull().references(() => users.userId),
-  entityId: integer('entity_id').notNull(), //references user or tag
+  followerId: text('follower_id').notNull().references(() => users.userId),
+  entityId: text('entity_id').notNull(), //references user or tag
   type: followtype('type').notNull(),
   createdAt: timestamp('created_at').notNull()
 }, (t) => ({
@@ -100,9 +100,9 @@ export const follows = pgTable('follows', {
 }));
 
 export const posts = pgTable('posts', {
-  postId: serial('post_id').primaryKey(),
+  postId: text('post_id').primaryKey(),
   title: varchar('title').notNull(),
-  userId: integer('userid').notNull().references(() => users.userId),
+  userId: text('userid').notNull().references(() => users.userId),
   publishedDate: timestamp('published_date').notNull(),
   version: integer('version').unique()
 });
@@ -110,10 +110,10 @@ export const posts = pgTable('posts', {
 export const versionType = pgEnum('version_type', ['post', 'page']);
 export const contentVersions = pgTable('contentversions', {
   versionId: serial('version_id').primaryKey(),
-  postId: integer('post_id').notNull().references(()=>posts.postId),
+  postId: text('post_id').notNull().references(()=>posts.postId),
   type: versionType('type').notNull(),
   updateAt: timestamp('update_at').notNull(),
-  contentPath: varchar('content_path').notNull().unique(),
+  content: json('content'),
   publishedStatus: boolean('published_status').notNull(),
   isFeatured: boolean('is_featured').notNull(),
   metadata: json('metadata')
@@ -121,21 +121,21 @@ export const contentVersions = pgTable('contentversions', {
 
 export const comments = pgTable('comments', {
   commentId: serial('comment_id').primaryKey(),
-  postId: integer('post_id').notNull().references(() => posts.postId),
-  userId: integer('user_id').notNull().references(() => users.userId),
+  postId: text('post_id').notNull().references(() => posts.postId),
+  userId: text('user_id').notNull().references(() => users.userId),
   createdAt: timestamp('created_at').notNull(),
-  parentComment: integer('parent_comment').references((): AnyPgColumn => users.userId),
+  parentComment: integer('parent_comment').references((): AnyPgColumn => comments.commentId),
   text: text('text').notNull()
 });
 
 export const tags = pgTable('tags', {
-  tagId: serial('tag_id').primaryKey(),
+  tagId: text('tag_id').primaryKey(),
   name: varchar('name').notNull().unique()
 });
 
 export const tagsToPosts = pgTable('tagstoposts', {
-  tagId: integer('tag_id').notNull().references(()=>tags.tagId),
-  postId: integer('post_id').notNull().references(()=>posts.postId)
+  tagId: text('tag_id').notNull().references(()=>tags.tagId),
+  postId: text('post_id').notNull().references(()=>posts.postId)
 }, (t) => ({
   pk: primaryKey(t.tagId, t.postId)
 }));
@@ -143,7 +143,7 @@ export const tagsToPosts = pgTable('tagstoposts', {
 export const slugType = pgEnum('slug_type', ['tag', 'post']);
 export const slugs = pgTable('slugs', {
   slugId: serial('slug_id').primaryKey(),
-  entityId: integer('entity_id').notNull(), //references post or tag
+  entityId: text('entity_id').notNull(), //references post or tag
   slug: varchar('slug').notNull().unique(),
   type: slugType('type').notNull()
 });
@@ -162,15 +162,15 @@ export const assets = pgTable('assets', {
 });
 
 export const postReads = pgTable('postreads', {
-  postId: integer('post_id').notNull().references(()=>posts.postId),
+  postId: text('post_id').notNull().references(()=>posts.postId),
   postVersion: integer('post_version').notNull().references(()=>contentVersions.versionId),
-  userId: integer('user_id').notNull().references(()=>users.userId)
+  userId: text('user_id').notNull().references(()=>users.userId)
 }, (t) => ({
   pk: primaryKey(t.postId, t.postVersion, t.userId)
 }));
 
 export const postAssets = pgTable('postassets', {
-  postId: integer('post_id').notNull().references(()=>posts.postId),
+  postId: text('post_id').notNull().references(()=>posts.postId),
   assetId: integer('assetid').notNull().references(()=>assets.assetId)
 }, (t) => ({
   pk: primaryKey(t.postId, t.assetId)
