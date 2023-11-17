@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-		remotePatterns: [{ hostname: "images.pexels.com" }],
-		remotePatterns: [{ hostname: "m.media-amazon.com" }],
+		remotePatterns: [{ hostname: "images.pexels.com" }, { hostname: "m.media-amazon.com" }],
 	}
 };
 
