@@ -1,3 +1,5 @@
+"use client";
+
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -19,6 +21,7 @@ export function Navbar() {
   return (
     <NavigationMenu className="flex max-w-full w-full fixed top-0 left-0 z-[1005]">
       <div className="absolute top-0 left-0 w-full h-[150%] [mask-size:100%_85%] [mask-image:linear-gradient(black_60%,_transparent)] [mask-repeat:no-repeat] bg-white/[0.18] backdrop-blur-xl backdrop-saturate-200 z-10" />
+      
       <NavigationMenuList className="relative z-10 p-2">
         <NavigationMenuItem>
           <Link href="/" legacyBehavior passHref>
@@ -35,7 +38,9 @@ export function Navbar() {
           </Link>
         </NavigationMenuItem>
       </NavigationMenuList>
+
       <div className="flex flex-grow"></div>
+
       <NavigationMenuList className="flex relative z-10 p-2">
         <NavigationMenuItem>
           <Command>
