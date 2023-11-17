@@ -1,5 +1,5 @@
 // Inspired by https://anasrin.vercel.app/blog/seeding-database-with-drizzle-orm/
-import { assets, comments, contentVersions, follows, members, permissions, postAssets, postReads, posts, rolePermissions, roles, slugs, tags, tagsToPosts, userRoles, users } from "../src/db/schema.ts";
+import { assets, comments, contentVersions, follows, users, permissions, postAssets, postReads, posts, rolePermissions, roles, slugs, tags, tagsToPosts, userRoles, accounts } from "../src/db/schema.ts";
 import { faker } from "@faker-js/faker";
 
 // Database and SQL utilities import
@@ -176,16 +176,15 @@ const main = async () => {
     
     // Seed members and users
     const usersData: (typeof users.$inferInsert)[] = [];
-    const membersData: (typeof users.$inferInsert)[] = [];
+    const accountsData: (typeof accounts.$inferInsert)[] = [];
     for (let i = 0; i < 10; i++) {
-      const [member] = await tx.insert(members).values({
+      const [user] = await tx.insert(users).values({
         name: faker.internet.displayName(),
         email: faker.internet.email(),
-        password: faker.internet.password(),
       }).returning();
-      membersData.push(member);
+      usersData.push(user);
 
-      const [user] = await tx.insert(users).values({
+      const [accounts] = await tx.insert(accounts).values({
         name: faker.person.fullName(),
         email: faker.internet.email(),
         password: faker.internet.password(),

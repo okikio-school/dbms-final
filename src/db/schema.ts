@@ -1,25 +1,68 @@
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
+import type { AdapterAccount } from 'next-auth/adapters';
 
 import { pgTable, pgEnum, serial, text, varchar, integer, timestamp, decimal, boolean, primaryKey, json } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-// Table definitions
 export const users = pgTable('users', {
-  userId: serial('user_id').primaryKey(),
-  name: varchar('name').notNull(),
-  email: varchar('email').notNull().unique(),
-  password: varchar('password').notNull(),
-  bio: text('bio'),
-  memberId: integer('memberid').unique().references(() => members.memberId)
-});
-
-export const members = pgTable('members', {
-  memberId: serial('memberid').primaryKey(),
+  userId: text('user_id').primaryKey(),
   name: varchar('name').notNull(),
   email: varchar('email').unique().notNull(),
-  password: varchar('password').notNull()
+  emailVerified: timestamp("emailVerified", { mode: "date" }),
+  image: text("image"),
+  bio: text('bio'),
 });
 
+// Accounts represent the different types of ways a user can signin
+export const accounts = pgTable("account", {
+    userId: integer('user_id').unique().references(() => users.userId, { onDelete: "cascade" }),
+  
+    // Future proofing our implmentation
+    type: text("type").$type<AdapterAccount["type"]>().notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
+
+    // The password field stores the base64-encoded string representing the hashed and salted password.
+    password: varchar('password').notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (account) => ({
+    compoundKey: primaryKey(account.provider, account.providerAccountId),
+  })
+)
+ 
+export const sessions = pgTable("session", {
+  sessionToken: text("sessionToken").notNull().primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.userId, { onDelete: "cascade" }),
+  expires: timestamp("expires", { mode: "date" }).notNull(),
+})
+
+// VerificationTokens table schema
+export const verificationTokens = pgTable("verificationToken",
+  {
+    // Identifier, usually the email, used to link the token to the user.
+    identifier: text("identifier").notNull(),
+
+    // The verification token sent to the user's email for account verification.
+    token: text("token").notNull(),
+
+    // Expiry date of the token for security purposes.
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+  },
+  (vt) => ({
+    compoundKey: primaryKey(vt.identifier, vt.token),
+  })
+);
+
+// We'll use roles to identify users and staff 
 export const roles = pgTable('roles', {
   roleId: serial('role_id').primaryKey(),
   name: varchar('name').notNull().unique(),
@@ -48,7 +91,7 @@ export const rolePermissions = pgTable('rolepermissions', {
 
 export const followtype = pgEnum('follow_type', ['user', 'tag']);
 export const follows = pgTable('follows', {
-  followerId: integer('follower_id').notNull().references(() => members.memberId),
+  followerId: integer('follower_id').notNull().references(() => users.userId),
   entityId: integer('entity_id').notNull(), //references user or tag
   type: followtype('type').notNull(),
   createdAt: timestamp('created_at').notNull()
@@ -79,7 +122,7 @@ export const contentVersions = pgTable('contentversions', {
 export const comments = pgTable('comments', {
   commentId: serial('comment_id').primaryKey(),
   postId: integer('post_id').notNull().references(() => posts.postId),
-  memberId: integer('memberid').notNull().references(() => members.memberId),
+  userId: integer('user_id').notNull().references(() => users.userId),
   createdAt: timestamp('created_at').notNull(),
   parentComment: integer('parent_comment').references((): AnyPgColumn => users.userId),
   text: text('text').notNull()
@@ -121,9 +164,9 @@ export const assets = pgTable('assets', {
 export const postReads = pgTable('postreads', {
   postId: integer('post_id').notNull().references(()=>posts.postId),
   postVersion: integer('post_version').notNull().references(()=>contentVersions.versionId),
-  memberId: integer('memberid').notNull().references(()=>members.memberId)
+  userId: integer('user_id').notNull().references(()=>users.userId)
 }, (t) => ({
-  pk: primaryKey(t.postId, t.postVersion, t.memberId)
+  pk: primaryKey(t.postId, t.postVersion, t.userId)
 }));
 
 export const postAssets = pgTable('postassets', {
@@ -136,25 +179,24 @@ export const postAssets = pgTable('postassets', {
 // Below, you would define the relations similar to the above definitions, keeping in mind to map the foreign keys accordingly.
 // Since this is a lengthy process, let me illustrate with a few examples:
 
-export const usersRelations = relations(users, ({ one, many }) => ({
-  member: one(members, {
-    fields: [users.memberId],
-    references: [members.memberId],
+export const usersRelations = relations(users, ({ many }) => ({
+  accounts: many(accounts, {
+    relationName: "userAccounts"
   }),
   posts: many(posts),
-  roles: many(userRoles)
-}));
-
-export const membersRelations = relations(members, ({ one, many }) => ({
-  user: one(users, {
-    fields: [members.memberId],
-    references: [users.memberId],
-  }),
+  roles: many(userRoles),
   comments: many(comments),
   follows: many(follows, {
-    relationName: "memberFollows"
+    relationName: "userFollows"
   }),
   reads: many(postReads)
+}));
+
+export const accontsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, {
+    fields: [accounts.userId],
+    references: [users.userId],
+  }),
 }));
 
 // Complete the rest of the relation definitions following the foreign key constraints provided by the ALTER TABLE SQL statements.
@@ -188,7 +230,7 @@ export const followsRelations = relations(follows, ({ one }) => ({
   follower: one(users, {
     fields: [follows.followerId],
     references: [users.userId],
-    relationName: "memberFollows"
+    relationName: "userFollows"
   }),
   // Assuming `entityId` in follows can refer to different types of entities,
   // You might need a conditional or polymorphic relation here, which is not a standard feature and would require custom logic.
@@ -223,9 +265,9 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
     fields: [comments.postId],
     references: [posts.postId],
   }),
-  member: one(members, {
-    fields: [comments.memberId],
-    references: [members.memberId],
+  user: one(users, {
+    fields: [comments.userId],
+    references: [users.userId],
   }),
   // Parent comment (self-referential)
   parentComment: one(comments, {
@@ -267,9 +309,9 @@ export const postReadsRelations = relations(postReads, ({ one }) => ({
     fields: [postReads.postId],
     references: [posts.postId],
   }),
-  member: one(members, {
-    fields: [postReads.memberId],
-    references: [members.memberId],
+  user: one(users, {
+    fields: [postReads.userId],
+    references: [users.userId],
   }),
   contentVersion: one(contentVersions, {
     fields: [postReads.postVersion],
