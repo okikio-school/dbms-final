@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db/db"
-import { users, posts, postReads, contentVersions } from "@/db/schema"
+import { users, posts, postReads, contentVersions, postReadsRelations } from "@/db/schema"
 import { desc, eq, gt, sql } from "drizzle-orm";
 import { PostgresJsPreparedQuery } from "drizzle-orm/postgres-js";
 import { cache } from "react";
@@ -44,12 +44,12 @@ const featuredpostsprep = db.select({
   title: posts.title,
   author: users.name,
   date: posts.publishedDate
-})
-.from(posts)
-.leftJoin(users, eq(users.userId, posts.userId))
-.leftJoin(contentVersions, eq(contentVersions.postId, posts.postId))
-.where(eq(contentVersions.isFeatured, true))
-.orderBy(desc(posts.publishedDate))
+}).from(posts)
+  .leftJoin(users, eq(users.userId, posts.userId))
+  .leftJoin(contentVersions, eq(contentVersions.postId, posts.postId))
+  .where(eq(contentVersions.isFeatured, true))
+  .orderBy(desc(posts.publishedDate));
+
 
 //================================================================================================================
 
@@ -76,4 +76,10 @@ export const getFeaturedPosts = cache(async function getFeaturedPosts() {
 //all posts
 export const getPosts = cache(async function getPosts() {
   return await postsprep.execute();
+})
+
+//my posts
+export const getMyPosts = cache(async function getMyPosts({userId} : {userId:string}) {
+  const mypostsprep = db.select().from(posts).where(eq(posts.userId, userId)).orderBy(desc(posts.publishedDate));
+  return await mypostsprep.execute();
 })
