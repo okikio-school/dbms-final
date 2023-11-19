@@ -10,7 +10,8 @@
     "drizzle:generate": "drizzle-kit generate:pg",
     "drizzle:push": "drizzle-kit push:pg",
     "drizzle:seed": "tsx ./scripts/seed.ts",
-    "drizzle:studio": "drizzle-kit studio"
+    "drizzle:studio": "drizzle-kit studio",
+    "carl:newpost": "tsx ./scripts/new_post.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.3.6",
