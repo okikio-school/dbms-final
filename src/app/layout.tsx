@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { Navbar } from '@/components/navbar'
 import { cn } from '@/lib/utils'
 
-import SessionServer from '@/components/session.server'
+import SessionClient from '@/components/session'
 import { Suspense } from 'react'
 import './globals.css'
 
@@ -33,12 +33,12 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <Navbar />
-        <Suspense>
-          <SessionServer>
+        <SessionClient>
+          <Navbar />
+          <Suspense>
             {children}
-          </SessionServer>
-        </Suspense>
+          </Suspense>
+        </SessionClient>
         
         <Toaster />
       </body>

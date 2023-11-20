@@ -1,18 +1,11 @@
 import type { AdapterSession, VerificationToken } from "next-auth/adapters";
-import type { Account, AuthOptions, User } from "next-auth";
+import type { Account, User } from "next-auth";
 
 import { db } from "@/db/db";
 import { eq, and } from "drizzle-orm";
 import { accounts, sessions, users, verificationTokens } from "@/db/schema";
-import { verifyKey } from "@/lib/passwords";
 
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
-import NextAuth from "next-auth";
-
-import CredentialsProvider from "next-auth/providers/credentials";
-import GitHubProvider from "next-auth/providers/github"
-import { Users2 } from "lucide-react";
-import { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } from "@/env";
 
 export type CustomUser = Omit<User, "id"> & typeof users.$inferSelect;
 export type CustomAccounts = Omit<Account, "id"> & typeof accounts.$inferSelect;
@@ -20,9 +13,8 @@ export type CustomAccounts = Omit<Account, "id"> & typeof accounts.$inferSelect;
 export interface AdapterUser extends CustomUser { }
 export interface AdapterAccount extends CustomAccounts { }
 
-const adapter = {
+export const adapter = {
   async createUser(data: Omit<AdapterUser, "id">) {
-    const userId = crypto.randomUUID();
     const user = await db
       .insert(users)
       .values({ ...data, userId: crypto.randomUUID() })
@@ -32,7 +24,7 @@ const adapter = {
       user
     })
     if (user) {
-      return { ...user, id: userId }
+      return { ...user, id: user.userId }
     }
     return user;
   },
@@ -212,83 +204,6 @@ const adapter = {
       .returning()
       .then((res) => res[0] ?? null);
 
-    return { provider, type, providerAccountId, userId };
+    return { provider, type, providerAccountId, userId, id: userId };
   },
 }
-
-export const authOptions: Omit<AuthOptions, "adapter"> & { adapter: typeof adapter} = {
-  adapter,
-  // Configure one or more authentication providers
-  providers: [
-    GitHubProvider({
-      clientId: GITHUB_CLIENT_ID!,
-      clientSecret: GITHUB_CLIENT_SECRET!,
-    }),
-    // CredentialsProvider({
-    //   // The name to display on the sign in form (e.g. 'Sign in with...')
-    //   name: "Credentials",
-    //   // The credentials is used to generate a suitable form on the sign in page.
-    //   // You can specify whatever fields you are expecting to be submitted.
-    //   // e.g. domain, username, password, 2FA token, etc.
-    //   // You can pass any HTML attribute to the <input> tag through the object.
-    //   credentials: {
-    //     email: { label: "Email", type: "email" },
-    //     password: { label: "Password", type: "password" },
-    //   },
-    //   async authorize(credentials, req) {
-    //     if (!credentials) return null;
-
-    //     // Fetch user from the database
-    //     const matchingUsers = await db
-    //       .select({
-    //         id: users.userId,
-    //         email: users.email,
-    //         password: users.password,
-    //       })
-    //       .from(users)
-    //       .where(eq(users.email, credentials.email))
-    //       .execute();
-
-    //     if (!matchingUsers) {
-    //       throw new Error("No user found with the email");
-    //     }
-
-    //     if (matchingUsers.length > 1) {
-    //       throw new Error("Too many users found with the email");
-    //     }
-
-    //     // Verify the password
-    //     const [user] = matchingUsers;
-    //     const isValid = await verifyKey(credentials.password, user.password);
-    //     if (!isValid) {
-    //       throw new Error("Invalid password");
-    //     }
-
-    //     // You need to provide your own logic here that takes the credentials
-    //     // submitted and returns either a object representing a user or value
-    //     // that is false/null if the credentials are invalid.
-    //     // e.g. return { id: 1, name: 'J Smith', email: 'jsmith@example.com' }
-    //     // You can also use the `req` object to obtain additional parameters
-    //     // (i.e., the request IP address)
-    //     // const res = await fetch("/your/endpoint", {
-    //     //   method: 'POST',
-    //     //   body: JSON.stringify(credentials),
-    //     //   headers: { "Content-Type": "application/json" }
-    //     // })
-    //     // const user = await res.json()
-
-    //     // // If no error and we have user data, return it
-    //     // if (res.ok && user) {
-    //     //   return user
-    //     // }
-    //     // // Return null if user data could not be retrieved
-    //     // return null
-    //     // Return user object on successful authentication
-    //     return { id: user.id + "", email: user.email };
-    //   },
-    // }),
-    // ...add more providers here
-  ],
-};
-
-export default NextAuth(authOptions as unknown as AuthOptions);

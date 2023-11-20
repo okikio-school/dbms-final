@@ -77,3 +77,7 @@ export const getFeaturedPosts = cache(async function getFeaturedPosts() {
 export const getPosts = cache(async function getPosts() {
   return await postsprep.execute();
 })
+
+export const createUser = async function createUser({ name, email, password }: { name: string, email: string, password: string }) {
+  // const 
+}
