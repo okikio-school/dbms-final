@@ -30,25 +30,23 @@ export default function Error({
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-8xl">
             Something went wrong!
           </h1>
-          <div className="flex items-center">
-            <Image
-              src={"/carl-error.png"}
-              alt={"Something went wrong..."}
-              width={400}
-              height={400}
-              className="object-center mx-auto"
-            />
-          </div>
+          <Button
+            variant={"ghost"}
+            onClick={
+              // Attempt to recover by trying to re-render the segment
+              () => reset()
+            }
+          >
+            Try again
+          </Button>
+          <Image
+            src={"/carl-error.png"}
+            alt={"Something went wrong..."}
+            width={400}
+            height={400}
+            className="object-center mx-auto py-5"
+          />
         </header>
-        <Button
-          variant={"ghost"}
-          onClick={
-            // Attempt to recover by trying to re-render the segment
-            () => reset()
-          }
-        >
-          Try again
-        </Button>
       </div>
     </article>
   );
