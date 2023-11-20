@@ -2,7 +2,7 @@
 
 import { db } from "@/db/db"
 import { users, posts, postReads, contentVersions, postReadsRelations } from "@/db/schema"
-import { desc, eq, gt, sql } from "drizzle-orm";
+import { and, desc, eq, gt, sql } from "drizzle-orm";
 import { PostgresJsPreparedQuery } from "drizzle-orm/postgres-js";
 import { cache } from "react";
 
@@ -82,4 +82,25 @@ export const getPosts = cache(async function getPosts() {
 export const getMyPosts = cache(async function getMyPosts({userId} : {userId:string}) {
   const mypostsprep = db.select().from(posts).where(eq(posts.userId, userId)).orderBy(desc(posts.publishedDate));
   return await mypostsprep.execute();
+})
+
+//post content
+export const getPostContent = cache(async function getPostContent(postID : string, versionID : number) {
+  const postcontentprep = db.select({
+    content: contentVersions.content,
+    title: posts.title,
+    author: users.name,
+    published_date: posts.publishedDate,
+    version: contentVersions.versionId,
+  }).from(posts)
+    .leftJoin(contentVersions, eq(contentVersions.postId, posts.postId))
+    .leftJoin(users, eq(users.userId, posts.userId))
+    .where(
+      and(
+        eq(posts.version, contentVersions.versionId),
+        eq(posts.postId, postID),
+        eq(contentVersions.versionId, versionID)
+        )
+    );
+  return await postcontentprep.execute();
 })
