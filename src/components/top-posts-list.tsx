@@ -16,7 +16,9 @@ export function TopPostsList({ initialList }: { initialList: Awaited<ReturnType<
     <>
       {
         list?.map((x) => { 
-          return <PostCard key={x.id} author={x.author} title={x.title} ratio={3}/>
+          let version = ""
+          if (!x.version) {version = "0"} else {version = x.version.toString()}
+          return <PostCard key={x.id} author={x.author} title={x.title} ratio={3} postID={x.id} versionID={version}/>
         })
       }
     </>
