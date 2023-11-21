@@ -12,7 +12,10 @@ export function FeaturedPost({ initialList }: { initialList: Awaited<ReturnType<
   if (error) return <div>Failed to load</div>;
   if (isLoading && (!list || list?.length <= 0)) return <div>Loading...</div>;
 
+  let version = "";
+  if (!list[0].version) {version = "0"} else {version = list[0].version.toString()}
+
   return (
-    <PostCard title={list[0].title} author={list[0].author} ratio={16/9} />
+    <PostCard title={list[0].title} author={list[0].author} ratio={16/9} postID={list[0].id} versionID={version} />
   );
 }

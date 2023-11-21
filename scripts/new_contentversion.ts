@@ -1,20 +1,12 @@
-import { db, sql } from "@/db/db.ts";
+import { db, sql } from "@/db/db";
 import { contentVersions, posts } from "@/db/schema";
 import { faker } from "@faker-js/faker";
-import { timeStamp } from "console";
 import { eq } from "drizzle-orm";
 import { argv } from "process";
 
-export async function NewPost(userID : string, title : string) {
-    const postID = crypto.randomUUID()
+export async function NewVersion(postID : string) {
+    let vid = 0;
     await db.transaction(async (tx) => {
-        const [post] = await tx.insert(posts).values({
-        postId: postID,
-        title: title,
-        userId: userID,
-        publishedDate: new Date(),
-        }).returning();
-
         const [contentversion] = await tx.insert(contentVersions).values({
         postId: postID,
         type: "post",
@@ -27,20 +19,22 @@ export async function NewPost(userID : string, title : string) {
         await tx.update(posts)
             .set({ version: contentversion.id })
             .where(eq(posts.postId, postID));
+        
+        vid = contentversion.id;
     });
-    return postID;
+    return vid;
 }
 
 const main = async () => {
 
-    if (argv.length != 4){
-        console.log("Usage: pnpm carl:newpost <post-title> <user-id>\n");
+    if (argv.length != 3){
+        console.log("Usage: pnpm carl:newversion <post-id>\n");
         return 1;
     }
 
-    console.log("Creating new post...");
-    const postID = await NewPost(argv[3], argv[2]);
-    console.log("New post created: " + postID);
+    console.log("Creating new version for post " + argv[2] + "...");
+    const versionID = await NewVersion(argv[2]);
+    console.log("New version created: " + versionID);
     return 0;
 };
 

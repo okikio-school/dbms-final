@@ -11,7 +11,8 @@
     "drizzle:push": "drizzle-kit push:pg",
     "drizzle:seed": "tsx ./scripts/seed.ts",
     "drizzle:studio": "drizzle-kit studio",
-    "carl:newpost": "tsx ./scripts/new_post.ts"
+    "carl:newpost": "tsx ./scripts/new_post.ts",
+    "carl:newversion": "tsx ./scripts/new_contentversion.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.3.6",

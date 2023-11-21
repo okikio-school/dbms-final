@@ -16,7 +16,8 @@ const postsprep = db.select({
   id: posts.postId, 
   title: posts.title, 
   author: users.name, 
-  date: posts.publishedDate
+  date: posts.publishedDate,
+  version: posts.version,
 }).from(posts)
   .leftJoin(users, eq(posts.userId, users.userId))
   .orderBy(desc(posts.publishedDate))
@@ -30,6 +31,7 @@ const toppostsprep = db.select({
   author: users.name, 
   date: posts.publishedDate, 
   reads: reads,
+  version: posts.version
 }).from(posts)
   .leftJoin(postReads, eq(posts.postId, postReads.postId))
   .leftJoin(users, eq(users.userId, posts.userId))
@@ -43,7 +45,8 @@ const featuredpostsprep = db.select({
   id: posts.postId,
   title: posts.title,
   author: users.name,
-  date: posts.publishedDate
+  date: posts.publishedDate,
+  version: posts.version,
 }).from(posts)
   .leftJoin(users, eq(users.userId, posts.userId))
   .leftJoin(contentVersions, eq(contentVersions.postId, posts.postId))
