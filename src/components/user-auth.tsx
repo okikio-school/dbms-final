@@ -1,14 +1,15 @@
 "use client";
 
-import type { users } from "@/db/schema";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 import { Github, Loader2 } from "lucide-react";
-import { signIn, useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+
+import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -40,11 +41,9 @@ const FormSchema = z.object({
 
 export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const session = useSession();
 
-  if (session?.data?.user) {
-    redirect("/");
-  }
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -173,7 +172,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
         variant="outline"
         type="button"
         disabled={isLoading}
-        onClick={() => signIn("github", { callbackUrl: "/" })}
+        onClick={() => signIn("github", { callbackUrl: callbackUrl ? callbackUrl : "/" })}
       >
         {isLoading ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

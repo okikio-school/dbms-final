@@ -1,12 +1,21 @@
-import { buttonVariants } from "@/components/ui/button";
 import { UserAuthForm } from "@/components/user-auth";
-import { cn } from "@/lib/utils";
+import { getServerSession, type AuthOptions } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/_options";
 
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function LoginPage() {
-  // Renders the editor instance using a React component.
+export default async function LoginPage() {
+  const session = await getServerSession(authOptions as unknown as AuthOptions);
+  const search = headers().get("x-search") ?? "";
+  if (session?.user) {
+    const searchParams = new URLSearchParams(search);
+    const callbackUrl = searchParams.get("callbackUrl");
+    redirect(callbackUrl ? callbackUrl : "/")
+  }
+  
   return (
     <div className="container relative grid h-[100dvh] flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex">

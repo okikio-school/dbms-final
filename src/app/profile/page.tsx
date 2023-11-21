@@ -1,4 +1,8 @@
-export default function ProfilePage() {
+import { protect } from "@/lib/protect";
+
+export default async function ProfilePage() {
+  await protect();
+  
   return (
     <div className="pt-24 px-2">
       <p>profile</p>

@@ -20,9 +20,7 @@ export const adapter = {
       .values({ ...data, userId: crypto.randomUUID() })
       .returning()
       .then((res) => res[0] ?? null);
-    console.log({
-      user
-    })
+
     if (user) {
       return { ...user, id: user.userId }
     }
@@ -34,10 +32,7 @@ export const adapter = {
       .from(users)
       .where(eq(users.userId, data))
       .then((res) => res[0] ?? null);
-      console.log({
-        getUser: user
-      })
-      return user;
+    return user;
   },
   async getUserByEmail(data: string) {
     const user = await db
@@ -45,19 +40,13 @@ export const adapter = {
       .from(users)
       .where(eq(users.email, data))
       .then((res) => res[0] ?? null);
-      console.log({
-        getUserByEmail: user
-      })
-      return user;
+    return user;
   },
   async createSession(data: {
     sessionToken: string
     userId: string
     expires: Date
   }) {
-    console.log({
-      session: data
-    })
     return await db
       .insert(sessions)
       .values(data)
@@ -76,9 +65,6 @@ export const adapter = {
       .then((res) => res[0] ?? null);
   },
   async updateUser(data: Partial<AdapterUser> & Pick<AdapterUser, "userId">) {
-    console.log({
-      updateUser: data
-    })
     // @ts-ignore
     if (!data.userId && !data.id) {
       throw new Error("No user id.");
@@ -101,9 +87,6 @@ export const adapter = {
       .then((res) => res[0]);
   },
   async linkAccount(rawAccount: AdapterAccount) {
-    console.log({
-      account: rawAccount
-    })
     const updatedAccount = await db
       .insert(accounts)
       .values(rawAccount)
