@@ -26,12 +26,15 @@ import {
 } from "@/components/ui/form";
 import Link from "next/link";
 import { Checkbox } from "./ui/checkbox";
+import { signUp } from "@/lib/actions";
+import { toast } from "./ui/use-toast";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   type: "login" | "signup";
 }
 
 const FormSchema = z.object({
+  name: z.string(),
   email: z.string().email(),
   password: z.string().min(3, {
     message: "Password must longer than 3 characters",
@@ -40,11 +43,6 @@ const FormSchema = z.object({
 });
 
 export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
-
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -52,19 +50,71 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
     },
   });
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
-    setIsLoading(true);
+  function onSubmit(data: z.infer<typeof FormSchema>) {
+    console.log({
+      data
+    })
+      
+    // (async () => {
+    //   setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
+    //   if (type === "login") {
+    //     signIn("credentials", { callbackUrl: callbackUrl ? callbackUrl : "/" })
+
+    //     toast({
+    //       title: "Login In",
+    //       description: "Description...",
+    //     });
+    //   } else if (type === "signup") { 
+    //     await signUp({
+    //       name: data.name,
+    //       email: data.email,
+    //       password: data.password
+    //     })
+
+    //     toast({
+    //       title: "Sign Up",
+    //       description: "Description...",
+    //     });
+    //   }
+
+    //   setIsLoading(false);
+    // })()
   }
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
-          <div className="grid gap-6 py-4">
+          <div className={cn("grid py-4", "gap-6")}>
+            {type === "signup" && <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-1">
+                  <FormLabel>Name</FormLabel>
+
+                  <div className="flex flex-col gap-0.5">
+                    <FormControl>
+                      <Input
+                        placeholder="John Doe"
+                        autoComplete="name"
+                        autoFocus
+                        required
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />}
+
             <FormField
               control={form.control}
               name="email"
@@ -72,15 +122,15 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
                 <FormItem className="flex flex-col gap-1">
                   <FormLabel>Email</FormLabel>
 
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-0.5">
                     <FormControl>
                       <Input
-                        placeholder="johndoe@email.com..."
+                        placeholder="johndoe@email.com"
                         type="email"
                         autoCapitalize="none"
                         autoComplete="email"
                         autoCorrect="off"
-                        autoFocus
+                        autoFocus={type === "login"}
                         required
                         {...field}
                       />
@@ -98,7 +148,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
                 <FormItem className="flex flex-col gap-1">
                   <FormLabel>Password</FormLabel>
 
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-0.5">
                     <FormControl>
                       <Input
                         placeholder="Password..."
@@ -145,8 +195,9 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
 
           <Button className="w-full" type="submit">
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign In with Email
+            {type === "login" ? "Log in" : "Sign up"} with Email
           </Button>
+
           <p className="leading-7 [&:not(:first-child)]:mt-6 text-sm text-muted-foreground text-center">
             <span>{type !== "login" ? 'Already have an account?' : `Don't have an account yet?`} </span>
             <Link
@@ -168,6 +219,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           </span>
         </div>
       </div>
+      
       <Button
         variant="outline"
         type="button"

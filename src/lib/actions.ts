@@ -1,9 +1,10 @@
 "use server";
 
 import { db } from "@/db/db"
-import { users, posts, postReads, contentVersions } from "@/db/schema"
+import { users, posts, postReads, contentVersions, accounts } from "@/db/schema"
 import { desc, eq, gt, sql } from "drizzle-orm";
-import { PostgresJsPreparedQuery } from "drizzle-orm/postgres-js";
+
+import { generateKey } from "./passwords";
 import { cache } from "react";
 
 //================================= PREP =====================================================
@@ -78,6 +79,30 @@ export const getPosts = cache(async function getPosts() {
   return await postsprep.execute();
 })
 
-export const createUser = async function createUser({ name, email, password }: { name: string, email: string, password: string }) {
-  // const 
+export const signUp = async function signUp({ name, email, password }: { name: string, email: string, password: string }) {
+  const result = await db.transaction(async (tx) => {
+    const [user] = await tx.insert(users).values({        
+      userId: crypto.randomUUID(),
+      name,
+      email,
+      bio: "Description...",
+      image: "",
+    }).returning();
+
+    const [account] = await tx.insert(accounts).values({
+      userId: user.userId,
+    
+      // Future proofing our implmentation
+      type: "email",
+      provider: "credentials",
+      providerAccountId: user.userId,
+  
+      // The password field stores the base64-encoded string representing the hashed and salted password.
+      password: await generateKey(password, 1_000_000),
+    }).returning();
+
+    return account;
+  })
+
+  return result
 }

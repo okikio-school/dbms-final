@@ -29,6 +29,10 @@ export const authOptions: Omit<AuthOptions, "adapter"> & { adapter: typeof adapt
       async authorize(credentials, req) {
         if (!credentials) return null;
 
+        console.log({
+          credentials
+        })
+
         // Fetch user from the database
         const user = await authenticate(credentials.email, credentials.password);
         if (!user) return null;

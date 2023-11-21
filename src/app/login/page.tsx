@@ -48,7 +48,9 @@ export default async function LoginPage() {
               Enter your email below to login
             </p>
           </div>
+          
           <UserAuthForm type="login" />
+
           <p className="px-8 text-center text-sm text-muted-foreground">
             By clicking continue, you agree to our{" "}
             <Link
