@@ -21,7 +21,7 @@ export async function authenticate(
 
     // Step 1: Retrieve the user by email
     const userList = await db
-      .select(users._.columns)
+      .select()
       .from(users)
       .where(eq(users.email, email))
       .execute();
@@ -40,7 +40,7 @@ export async function authenticate(
     
     // Step 2: Retrieve the associated account details
     const accountList = await db
-      .select(accounts._.columns)
+      .select()
       .from(accounts)
       .where(and(
         eq(accounts.userId, user.userId),
