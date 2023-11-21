@@ -10,7 +10,8 @@ export function PostsList({ initialList }: { initialList: Awaited<ReturnType<typ
   }, { fallbackData: initialList })
  
   if (error) return <div>Failed to load</div>;
-  if (isLoading && (!list || list?.length <= 0)) return <div>Loading...</div>;
+    if (isLoading && (!list || list.length <= 0)) return <div>Loading...</div>;
+    if (!isLoading && (!list || list.length <= 0)) return <div>Failed to load</div>;
 
   return (
     <>

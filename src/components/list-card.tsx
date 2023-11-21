@@ -15,7 +15,8 @@ export function MyPostsListCard({ userID }: { userID: string | null }) {
     })
    
     if (error) return <div>Failed to load</div>;
-    if (isLoading && (!list || list?.length <= 0)) return <div>Loading...</div>;
+    if (isLoading && (!list || list.length <= 0)) return <div>Loading...</div>;
+    if (!isLoading && (!list || list.length <= 0)) return <div>Failed to load</div>;
 
     return(
     <Card>

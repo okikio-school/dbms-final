@@ -18,15 +18,16 @@ export function PostContent({postID, versionID}:{postID : string, versionID : st
         return await getPostContent(postID, versid)
     })
     
-    if (error || !list) return <div>Failed to load</div>;
-    if (isLoading && (!list || list?.length <= 0)) return <div>Loading...</div>;
+    if (error) return <div>Failed to load</div>;
+    if (isLoading) return <div>Loading...</div>;
+    if (!isLoading && (!list || list.length <= 0)) return <div>Failed to load</div>;
 
-    const versioncontent = list[0].content as { markdown: any }
+    const versioncontent = list![0].content as { markdown: any }
     const md = versioncontent.markdown;
 
-    const title = list[0].title;
-    const author = list[0].author;
-    const date = list[0].published_date;
+    const title = list![0].title;
+    const author = list![0].author;
+    const date = list![0].published_date;
     
     return (
         <>
