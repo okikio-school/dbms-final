@@ -1,13 +1,9 @@
 import { UserAuthForm } from "@/components/user-auth";
-import { getServerSession, type AuthOptions } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]/_options";
 
 import Image from "next/image";
 import Link from "next/link";
 
-export default async function SignupPage() {
-  const session = await getServerSession(authOptions as unknown as AuthOptions);
-  
+export default function SignupPage() {  
   return (
     <div className="container relative grid h-[100dvh] flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex">
@@ -41,7 +37,7 @@ export default async function SignupPage() {
             </p>
           </div>
 
-          <UserAuthForm type="signup" session={session} />
+          <UserAuthForm type="signup" />
 
           <p className="px-8 text-center text-sm text-muted-foreground">
             By clicking continue, you agree to our{" "}

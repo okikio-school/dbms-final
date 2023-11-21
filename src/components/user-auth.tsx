@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 
 import { Github, Loader2 } from "lucide-react";
 
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { redirect, useSearchParams } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,7 +33,6 @@ import { toast } from "./ui/use-toast";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   type: "login" | "signup";
-  session: Session | null
 }
 
 const FormSchema = z.object({
@@ -45,13 +44,23 @@ const FormSchema = z.object({
   remember: z.boolean().default(false).optional(),
 });
 
-export function UserAuthForm({ className, type, session, ...props }: UserAuthFormProps) {
+export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
+
+  const session = useSession();
+  if (session?.data?.user) {
+    redirect(callbackUrl ? callbackUrl : "/");
+  }
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       remember: true,
     },
   });
+
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     console.log({
@@ -83,15 +92,6 @@ export function UserAuthForm({ className, type, session, ...props }: UserAuthFor
 
     //   setIsLoading(false);
     // })()
-  }
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
-  
-  if (session?.user) {
-    redirect(callbackUrl ? callbackUrl : "/");
   }
 
   return (
