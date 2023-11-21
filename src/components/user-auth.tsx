@@ -1,5 +1,7 @@
 "use client";
 
+import type { Session } from "next-auth";
+
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -9,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Github, Loader2 } from "lucide-react";
 
 import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -31,6 +33,7 @@ import { toast } from "./ui/use-toast";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   type: "login" | "signup";
+  session: Session | null
 }
 
 const FormSchema = z.object({
@@ -42,7 +45,7 @@ const FormSchema = z.object({
   remember: z.boolean().default(false).optional(),
 });
 
-export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
+export function UserAuthForm({ className, type, session, ...props }: UserAuthFormProps) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -86,6 +89,10 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
 
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
+  
+  if (session?.user) {
+    redirect(callbackUrl ? callbackUrl : "/");
+  }
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>

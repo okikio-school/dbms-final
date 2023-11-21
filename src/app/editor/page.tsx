@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 const Editor = dynamic(() => import("@/components/editor.tsx"), { ssr: false });
 
 export default async function EditorPage() {
-  await protect();
+  await protect("/editor");
 
   return (
     <div className="pt-48 pb-24 mx-auto max-w-screen-md">

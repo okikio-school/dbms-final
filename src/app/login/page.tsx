@@ -2,19 +2,11 @@ import { UserAuthForm } from "@/components/user-auth";
 import { getServerSession, type AuthOptions } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/_options";
 
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
 export default async function LoginPage() {
   const session = await getServerSession(authOptions as unknown as AuthOptions)
-  const search = headers().get("x-search") ?? "";
-  if (session?.user) {
-    const searchParams = new URLSearchParams(search);
-    const callbackUrl = searchParams.get("callbackUrl");
-    redirect(callbackUrl ? callbackUrl : "/")
-  }
   
   return (
     <div className="container relative grid h-[100dvh] flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0">
@@ -49,7 +41,7 @@ export default async function LoginPage() {
             </p>
           </div>
           
-          <UserAuthForm type="login" />
+          <UserAuthForm type="login" session={session} />
 
           <p className="px-8 text-center text-sm text-muted-foreground">
             By clicking continue, you agree to our{" "}

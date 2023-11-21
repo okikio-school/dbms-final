@@ -4,7 +4,7 @@ import { protect } from "@/lib/protect";
 
 const initialList = await getUsers();
 export default async function UsersPage() {
-  await protect();
+  await protect("/users");
 
   return (
     <div className="pt-24 px-2">
