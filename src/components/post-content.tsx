@@ -2,6 +2,7 @@ import { getPostContent } from "@/lib/actions";
 import Markdown from "react-markdown"
 import useSWR from "swr";
 import { contentVersions } from "@/db/schema";
+import { Separator } from "./ui/separator";
 
 export function PostContent({postID, versionID}:{postID : string, versionID : string}) {
     //initialList: Awaited<ReturnType<typeof getPostContent>>}
@@ -22,8 +23,22 @@ export function PostContent({postID, versionID}:{postID : string, versionID : st
 
     const versioncontent = list[0].content as { markdown: any }
     const md = versioncontent.markdown;
+
+    const title = list[0].title;
+    const author = list[0].author;
+    const date = list[0].published_date;
     
     return (
-        <Markdown>{md}</Markdown>
+        <>
+            <Separator/>
+            <div>
+                <p className="content-title">{title}</p>
+                <h6><em>Written by {author}<br/>Published on {date.toDateString()}</em></h6>
+            </div>
+            <Separator/>
+            <div className="md-container">
+                <Markdown>{md}</Markdown>
+            </div>
+        </>
     )
 }

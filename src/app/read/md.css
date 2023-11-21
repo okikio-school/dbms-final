@@ -1,0 +1,35 @@
+h1 {font-size: xx-large;
+    padding-top: 10px;
+    padding-bottom: 10px;}
+
+h2 {font-size: x-large;
+    padding-top: 10px;
+    padding-bottom: 10px;}
+
+h3 {font-size: larger;
+    padding-top: 10px;
+    padding-bottom: 10px;}
+
+h4 {font-size: large;
+    padding-top: 10px;
+    padding-bottom: 10px;}
+
+h5 {font-size: medium;
+    font-weight: 500;
+    padding-top: 10px;
+    padding-bottom: 10px;}
+
+h6 {font-size: small;
+    font-weight: 600;
+    padding-top: 10px;
+    padding-bottom: 10px;}
+
+p { font-size: medium;
+    padding-top: 4px;
+    padding-bottom: 4px;}
+
+.content-title {font-weight: 700;
+                font-size: xx-large;
+                font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif}
+
+.md-container {padding-top: 15px;}

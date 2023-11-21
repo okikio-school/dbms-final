@@ -3,6 +3,7 @@
 import { PostContent } from '@/components/post-content';
 import { getPostContent } from '@/lib/actions';
 import { useSearchParams } from 'next/navigation';
+import "./md.css";
 
 export default function PostPage() {
 
@@ -47,7 +48,7 @@ export default function PostPage() {
     }
 
     return (
-        <div className="pt-24 px-8">
+        <div className="pt-24 px-40">
             <PostContent postID={postID} versionID={versionID} />
         </div>
     );
