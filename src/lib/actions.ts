@@ -3,12 +3,13 @@
 import { db } from "@/db/db"
 import { users, posts, postReads, contentVersions } from "@/db/schema"
 import { desc, eq, gt, sql } from "drizzle-orm";
-import { PostgresJsPreparedQuery } from "drizzle-orm/postgres-js";
+//import { PostgresJsPreparedQuery } from "drizzle-orm/postgres-js";
 import { cache } from "react";
+
 
 //================================= PREP =====================================================
 
-//all users
+//all users 
 const usersprep = db.select().from(users).orderBy(users.userId).prepare("list_users");
 
 //all posts
@@ -77,3 +78,58 @@ export const getFeaturedPosts = cache(async function getFeaturedPosts() {
 export const getPosts = cache(async function getPosts() {
   return await postsprep.execute();
 })
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// retrieves relevant posts for a specific user
+export const getRelevantPosts = async (userId: string) => {
+  const relevantPostsQuery = sql<{
+    followerId: string;
+    postId: string;
+    title: string;
+    followedId: string;
+    followedName: string;
+    followType: string;
+  }>`
+    SELECT f.follower_id, p.post_id, p.title, t.tag_id AS followed_id, 
+    t.name AS followed_name, f.type AS follow_type
+    FROM posts p, tagstoposts tp, tags t
+    JOIN follows f ON f.entity_id = t.tag_id
+    WHERE p.post_id = tp.post_id AND tp.tag_id = t.tag_id AND f.type = 'tag' AND f.follower_id = ${userId}
+    UNION 
+    SELECT f.follower_id, p.post_id, p.title, u.user_id AS followed_id, 
+    u.name AS followed_name, f.type AS follow_type
+    FROM posts p, users u
+    JOIN follows f ON f.entity_id = u.user_id
+    WHERE p.userid = u.user_id AND f.type = 'user' AND f.follower_id = ${userId}`;
+
+  const relevantPosts = await db.select(relevantPostsQuery);
+  return relevantPosts;
+};
+
+
+// get posts for For You page
+export const getForYouPageData = async (userId: string) => {
+  try {
+
+    const userData = await getUsers();
+
+    const relevantPosts = await getRelevantPosts(userId);
+
+    const topPosts = await getTopPosts();
+
+    const featuredPosts = await getFeaturedPosts();
+
+    return {
+      user: userData,
+      relevantPosts,
+      topPosts,
+      featuredPosts,
+    };
+
+  } catch (error) {
+    console.error("Error fetching data for For You page:", error);
+    throw error;
+  }
+};
