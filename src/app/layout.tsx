@@ -2,14 +2,14 @@ import type { Metadata } from 'next'
 import { Inter as FontSans } from "next/font/google"
 
 import { Toaster } from '@/components/ui/toaster'
-import { Navbar } from '@/components/navbar'
+import { Navbar } from '@/components/navbar/navbar'
 import { cn } from '@/lib/utils'
 
 import SessionServer from '@/components/session.server'
 import { Suspense } from 'react'
 import './globals.css'
 
-export const fontSans = FontSans({
+const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 })
@@ -33,12 +33,12 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <Navbar />
-        <Suspense>
-          <SessionServer>
+        <SessionServer>
+          <Navbar />
+          <Suspense>
             {children}
-          </SessionServer>
-        </Suspense>
+          </Suspense>
+        </SessionServer>
         
         <Toaster />
       </body>

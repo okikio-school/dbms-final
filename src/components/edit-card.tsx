@@ -52,26 +52,36 @@ export function EditForm({ user }: { user: typeof users.$inferSelect }) {
   function onSubmit(data: z.infer<typeof FormSchema>) {
     (async () => {
       try {
-        mutate("/api/list-users", (currentData: NonNullable<typeof users.$inferSelect>[] = []) => {
-          return currentData.map(item =>
-            item.userId === user.userId ? { ...item, ...(data as typeof users.$inferInsert) } : item
-          );
-        }, false);
+        mutate(
+          "/api/list-users",
+          (currentData: NonNullable<typeof users.$inferSelect>[] = []) => {
+            return currentData.map((item) =>
+              item.userId === user.userId
+                ? { ...item, ...(data as typeof users.$inferInsert) }
+                : item
+            );
+          },
+          false
+        );
         await updateUserData(user.userId, data as typeof users.$inferInsert);
-      toast({
-        title: "Success! You submitted the following values:",
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-            <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-          </pre>
-        ),
-      });
+        toast({
+          title: "Success! You submitted the following values:",
+          description: (
+            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+              <code className="text-white">
+                {JSON.stringify(data, null, 2)}
+              </code>
+            </pre>
+          ),
+        });
       } catch (e) {
         toast({
           title: "Error! We hit a snag while saving the values:",
           description: (
             <pre className="mt-2 w-[340px] rounded-md bg-red-950 p-4">
-              <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+              <code className="text-white">
+                {JSON.stringify(data, null, 2)}
+              </code>
             </pre>
           ),
         });
@@ -81,7 +91,7 @@ export function EditForm({ user }: { user: typeof users.$inferSelect }) {
 
   return (
     <Dialog>
-      <DialogTrigger asChild>        
+      <DialogTrigger asChild>
         <Button variant="secondary" size="sm" className="flex gap-2 px-3">
           <PencilIcon className="h-4 w-4" />
           <span>Edit Profile</span>
@@ -105,7 +115,7 @@ export function EditForm({ user }: { user: typeof users.$inferSelect }) {
                 render={({ field }) => (
                   <FormItem className="flex flex-col gap-1">
                     <FormLabel>Name</FormLabel>
-                    
+
                     <div className="space-y-4">
                       <FormControl>
                         <Input placeholder="John Doe..." {...field} />
@@ -123,7 +133,7 @@ export function EditForm({ user }: { user: typeof users.$inferSelect }) {
                 render={({ field }) => (
                   <FormItem className="flex flex-col gap-1">
                     <FormLabel>Bio</FormLabel>
-                    
+
                     <div className="space-y-4">
                       <FormControl>
                         <Textarea
@@ -139,11 +149,11 @@ export function EditForm({ user }: { user: typeof users.$inferSelect }) {
                 )}
               />
             </div>
-            
+
             <DialogFooter>
               <DialogClose asChild>
                 <Button type="submit">Save changes</Button>
-              </DialogClose>   
+              </DialogClose>
             </DialogFooter>
           </form>
         </Form>
