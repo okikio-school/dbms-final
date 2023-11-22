@@ -16,6 +16,7 @@ export const authOptions: Omit<AuthOptions, "adapter"> & { adapter: typeof adapt
       clientSecret: GITHUB_CLIENT_SECRET!,
     }),
     CredentialsProvider({
+      id: 'credentials',
       // The name to display on the sign in form (e.g. 'Sign in with...')
       name: "Credentials",
       // The credentials is used to generate a suitable form on the sign in page.
@@ -29,14 +30,15 @@ export const authOptions: Omit<AuthOptions, "adapter"> & { adapter: typeof adapt
       async authorize(credentials, req) {
         if (!credentials) return null;
 
-        console.log({
-          credentials
-        })
-
         // Fetch user from the database
         const user = await authenticate(credentials.email, credentials.password);
         if (!user) return null;
-        return { id: user.userId, email: user.email };
+
+        console.log({
+          credentials,
+          user
+        })
+        return { ...user, id: user.userId, email: user.email };
 
         // You need to provide your own logic here that takes the credentials
         // submitted and returns either a object representing a user or value
@@ -63,4 +65,16 @@ export const authOptions: Omit<AuthOptions, "adapter"> & { adapter: typeof adapt
     }),
     // ...add more providers here
   ],
+  callbacks: {
+
+    async session({ session, token }) {
+      // session.user.accessToken = token.accessToken;
+      console.log({
+        session, 
+        token
+      })
+
+      return session;
+    },
+  }
 };

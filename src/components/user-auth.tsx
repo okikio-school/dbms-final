@@ -49,6 +49,9 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
   const callbackUrl = searchParams.get("callbackUrl");
 
   const session = useSession();
+  console.log({
+    session
+  })
   if (session?.data?.user) {
     redirect(callbackUrl ? callbackUrl : "/");
   }
@@ -57,41 +60,45 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
+      name: "John Doe",
+      password: "123456",
+      email: "johndoe@gmail.com",
       remember: true,
     },
   });
 
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log({
-      data
-    })
-      
-    // (async () => {
-    //   setIsLoading(true);
+  function onSubmit(data: z.infer<typeof FormSchema>) {      
+    (async () => {
+      setIsLoading(true);
 
-    //   if (type === "login") {
-    //     signIn("credentials", { callbackUrl: callbackUrl ? callbackUrl : "/" })
+      if (type === "login") {
+        await signIn("credentials", {
+          redirect: true,
+          email: data.email,
+          password: data.password,
+          callbackUrl: callbackUrl ? callbackUrl : "/",
+        });
 
-    //     toast({
-    //       title: "Login In",
-    //       description: "Description...",
-    //     });
-    //   } else if (type === "signup") { 
-    //     await signUp({
-    //       name: data.name,
-    //       email: data.email,
-    //       password: data.password
-    //     })
+        toast({
+          title: "Login In",
+          description: "Description...",
+        });
+      } else if (type === "signup") { 
+        await signUp({
+          name: data.name,
+          email: data.email,
+          password: data.password
+        })
 
-    //     toast({
-    //       title: "Sign Up",
-    //       description: "Description...",
-    //     });
-    //   }
+        toast({
+          title: "Sign Up",
+          description: "Description...",
+        });
+      }
 
-    //   setIsLoading(false);
-    // })()
+      setIsLoading(false);
+    })()
   }
 
   return (

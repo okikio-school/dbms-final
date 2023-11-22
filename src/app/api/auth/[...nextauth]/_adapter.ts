@@ -47,6 +47,9 @@ export const adapter = {
     userId: string
     expires: Date
   }) {
+    console.log({
+      createSession: data
+    })
     return await db
       .insert(sessions)
       .values(data)
