@@ -1,12 +1,13 @@
 "use server";
 
 import { db } from "@/db/db"
-import { users, posts, postReads, contentVersions, postReadsRelations } from "@/db/schema"
-import { and, desc, eq, gt, sql } from "drizzle-orm";
-import { PostgresJsPreparedQuery } from "drizzle-orm/postgres-js";
+import { users, posts, postReads, contentVersions, accounts, verificationTokens } from "@/db/schema"
+import { and, desc, eq, gt, lte, sql } from "drizzle-orm";
 import { cache } from "react";
 import { NotifyResetEmail, ResetEmail } from "@/components/email/email";
-import { Html } from "@react-email/html";
+import { NEXTAUTH_URL } from "@/env";
+import { sendMail } from "./mail";
+import { generateKey } from "./passwords";
 
 //================================= PREP =====================================================
 
