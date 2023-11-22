@@ -29,10 +29,11 @@ import Markdown from "react-markdown";
 const Editor = dynamic(() => import("@/components/editor.tsx"), { ssr: false });
 
 export default function EditorPage() {
-  protectClient();
+  // protectClient();
 
   // Stores the editor's contents as Markdown.
   const [markdown, setMarkdown] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
   const [mode, setMode] = useState<"edit" | "split" | "preview">("edit");
 
   return (
@@ -40,7 +41,7 @@ export default function EditorPage() {
       <div className="flex bg-background h-full flex-col">
         <div className="container px-2 bg-background shadow-sm sticky top-20">
           <div className="flex flex-col items-start justify-between space-y-2 px-4 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
-            <h2 className="text-lg font-semibold">New Post</h2>
+            <h2 className="text-lg font-semibold">{(title || "New Post") + "..."}</h2>
             <div className="flex space-x-2">
 
               <div className="flex items-center space-x-2">
@@ -58,14 +59,15 @@ export default function EditorPage() {
           <Separator />
         </div>
 
-        <div className="px-2 py-4">
+        <div className="px-2 py-4 flex flex-col">
           <textarea
             maxLength={150}
             placeholder="Article Title…"
             className={cn(
               "w-full scroll-m-20 text-3xl font-bold resize-none min-h-[40px]",
-              "min-h-[40px] rounded-md bg-background px-3 py-2 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              "min-h-[1em] rounded-md bg-background px-3 py-2 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             )}
+            onChange={(e) => setTitle(e.target.value)}
           />
 
           <textarea
@@ -86,7 +88,7 @@ export default function EditorPage() {
             setMode(value as "edit" | "split" | "preview");
           }}
         >
-          <div className="container h-full px-4 py-6">
+          <div className="container h-full px-4">
             <div className="grid w-full h-full gap-6 items-stretch md:grid-cols-[1fr_200px]">
               <div className="hidden flex-col space-y-4 sm:flex md:order-2">
                 <div className="grid gap-2 sticky top-[10rem] ">
