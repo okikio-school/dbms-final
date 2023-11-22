@@ -1,12 +1,12 @@
 'use client';
 
-import { getPosts } from "@/lib/actions";
+import { getRelevantPosts } from "@/lib/actions";
 import { PostItem } from "./post-card";
 import useSWR from 'swr'
 
-export function PostsList({ initialList }: { initialList: Awaited<ReturnType<typeof getPosts>>}) {
+export function PostsList({ initialList, userID }: { initialList: Awaited<ReturnType<typeof getRelevantPosts>>, userID : string}) {
   const { data: list, error, isLoading } = useSWR('/api/list-posts', async () => {
-    return await getPosts()
+    return await getRelevantPosts(userID);
   }, { fallbackData: initialList })
  
   if (error) return <div>Failed to load</div>;
@@ -19,7 +19,7 @@ export function PostsList({ initialList }: { initialList: Awaited<ReturnType<typ
         list?.map((x) => { 
           let version = "";
           if (!x.version) {version = "0"} else {version = x.version.toString()}
-          return <PostItem key={x.id} author={x.author} title={x.title} postID={x.id} versionID={version}/>
+          return <PostItem key={x.postID} author={x.author} title={x.title} postID={x.postID} versionID={version}/>
         })
       }
     </>

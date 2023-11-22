@@ -1,8 +1,9 @@
 "use server";
 
 import { db } from "@/db/db"
-import { users, posts, postReads, contentVersions, postReadsRelations } from "@/db/schema"
+import { users, posts, postReads, contentVersions, postReadsRelations, follows, tags, tagsToPosts } from "@/db/schema"
 import { and, desc, eq, gt, sql } from "drizzle-orm";
+import { union } from "drizzle-orm/pg-core";
 import { PostgresJsPreparedQuery } from "drizzle-orm/postgres-js";
 import { cache } from "react";
 
@@ -82,18 +83,11 @@ export const getPosts = cache(async function getPosts() {
   return await postsprep.execute();
 })
 
-/*
+
 //relevant posts
-export const getRelevantPosts = async (userId: string) => {
-  const relevantPostsQuery = sql<{
-    followerId: string;
-    postId: string;
-    title: string;
-    followedId: string;
-    followedName: string;
-    followType: string;
-  }>`
-    SELECT f.follower_id, p.post_id, p.title, t.tag_id AS followed_id, 
+export const getRelevantPosts = cache(async function getRelevantPosts(userId : string) {
+
+  /*SELECT f.follower_id, p.post_id, p.title, t.tag_id AS followed_id, 
     t.name AS followed_name, f.type AS follow_type
     FROM posts p, tagstoposts tp, tags t
     JOIN follows f ON f.entity_id = t.tag_id
@@ -103,12 +97,47 @@ export const getRelevantPosts = async (userId: string) => {
     u.name AS followed_name, f.type AS follow_type
     FROM posts p, users u
     JOIN follows f ON f.entity_id = u.user_id
-    WHERE p.userid = u.user_id AND f.type = 'user' AND f.follower_id = ${userId}`;
+    WHERE p.userid = u.user_id AND f.type = 'user' AND f.follower_id = ${userId}`;*/
 
-  const relevantPosts = await db.select(relevantPostsQuery);
-  return relevantPosts;
-};
-*/
+  const tagfollowsprep = db.select({
+    follower: follows.followerId,
+    postID: posts.postId,
+    title: posts.title,
+    followed: tags.tagId,
+    name: tags.name,
+    type: follows.type,
+    author: users.name,
+    version: posts.version,
+  }).from(posts)
+    .innerJoin(tagsToPosts, eq(posts.postId, tagsToPosts.postId))
+    .innerJoin(tags, eq(tags.tagId, tagsToPosts.tagId))
+    .innerJoin(follows, eq(follows.entityId, tags.tagId))
+    .innerJoin(users, eq(users.userId, posts.userId))
+    .where(and(
+      eq(follows.type, 'tag'),
+      eq(follows.followerId, userId),
+  ));
+
+  const userfollowsprep = db.select({
+    follower: follows.followerId,
+    postID: posts.postId,
+    title: posts.title,
+    followed: users.userId,
+    name: users.name,
+    type: follows.type,
+    author: users.name,
+    version: posts.version,
+  }).from(posts)
+    .innerJoin(users, eq(users.userId, posts.userId))
+    .innerJoin(follows, eq(follows.entityId, users.userId))
+    .where(and(
+      eq(follows.type, 'tag'),
+      eq(follows.followerId, userId),
+  ));
+
+  return await union(tagfollowsprep, userfollowsprep);
+})
+
 
 //my posts
 export const getMyPosts = cache(async function getMyPosts({userId} : {userId:string}) {
