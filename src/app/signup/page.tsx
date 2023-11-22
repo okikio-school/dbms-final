@@ -3,7 +3,7 @@ import { UserAuthForm } from "@/components/user-auth";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function SignupPage() {  
   return (
     <div className="container relative grid h-[100dvh] flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex">
@@ -19,8 +19,8 @@ export default function LoginPage() {
           <blockquote className="space-y-2">
             <p className="text-lg">
               &ldquo;This library has saved me countless hours of work and
-              helped me deliver stunning designs to my clients faster than
-              ever before.&rdquo;
+              helped me deliver stunning designs to my clients faster than ever
+              before.&rdquo;
             </p>
             <footer className="text-sm">Sofia Davis</footer>
           </blockquote>
@@ -30,14 +30,14 @@ export default function LoginPage() {
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
-              Log in to your account
+              Create an account
             </h1>
             <p className="text-sm text-muted-foreground">
-              Enter your email below to login
+              Enter your email below to create your account
             </p>
           </div>
-          
-          <UserAuthForm type="login" />
+
+          <UserAuthForm type="signup" />
 
           <p className="px-8 text-center text-sm text-muted-foreground">
             By clicking continue, you agree to our{" "}
