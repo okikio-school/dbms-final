@@ -5,23 +5,21 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "./ui/navigation-menu";
+} from "../ui/navigation-menu";
 
-import {
-  Command,
-  CommandInput,
-} from "@/components/ui/command";
-import { CommandMenu } from "./command-menu";
+import { Command, CommandInput } from "@/components/ui/command";
+import { CommandMenu } from "@/components/command-menu";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
+import { NavbarProfile } from "./profile";
+
 import Link from "next/link";
 
 export function Navbar() {
   return (
     <NavigationMenu className="flex max-w-full w-full fixed top-0 left-0 z-[1005]">
       <div className="absolute top-0 left-0 w-full h-[150%] [mask-size:100%_85%] [mask-image:linear-gradient(black_60%,_transparent)] [mask-repeat:no-repeat] bg-white/[0.18] backdrop-blur-xl backdrop-saturate-200 z-10" />
-      
+
       <NavigationMenuList className="relative z-10 p-2">
         <NavigationMenuItem>
           <Link href="/" legacyBehavior passHref>
@@ -41,7 +39,7 @@ export function Navbar() {
 
       <div className="flex flex-grow"></div>
 
-      <NavigationMenuList className="flex relative z-10 p-2">
+      <NavigationMenuList className="flex gap-1 relative z-10 p-2">
         <NavigationMenuItem>
           <Command>
             <CommandInput placeholder="Search Posts/Authors/Tags" />
@@ -54,19 +52,8 @@ export function Navbar() {
             </kbd>
           </p>
         </NavigationMenuItem>
-        <NavigationMenuItem>
-          <Link href="/profile" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              <Avatar>
-                <AvatarImage
-                  src="https://github.com/okikio.png"
-                  alt="@okikio"
-                />
-                <AvatarFallback>ME</AvatarFallback>
-              </Avatar>
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
+
+        <NavbarProfile />
       </NavigationMenuList>
       <CommandMenu />
     </NavigationMenu>

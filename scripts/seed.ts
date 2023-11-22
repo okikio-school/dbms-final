@@ -202,7 +202,7 @@ const main = async () => {
         userId: user.userId,
       
         // Future proofing our implmentation
-        type: "credentials",
+        type: "email",
         provider: "credentials",
         providerAccountId: user.userId,
     
