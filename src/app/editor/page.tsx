@@ -18,13 +18,18 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter, SheetClose } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+
 import dynamic from "next/dynamic";
 import { EditorSave } from "@/components/editor/save";
 import { EditorActions } from "@/components/editor/actions";
 
 import { SplitSquareHorizontal } from "lucide-react";
 import { useState } from "react";
+
 import Markdown from "react-markdown";
+import { Label } from "@/components/ui/label";
 
 const Editor = dynamic(() => import("@/components/editor.tsx"), { ssr: false });
 
@@ -46,10 +51,45 @@ export default function EditorPage() {
 
               <div className="flex items-center space-x-2">
                 <Button>Publish</Button>
-                <Button variant="secondary">
-                  <span className="sr-only">Show history</span>
-                  <CounterClockwiseClockIcon className="h-4 w-4" />
-                </Button>
+
+                <Sheet>
+                  <SheetTrigger asChild>
+
+                    <Button variant="secondary">
+                      <span className="sr-only">Show history</span>
+                      <CounterClockwiseClockIcon className="h-4 w-4" />
+                    </Button>
+                  </SheetTrigger>
+
+                  <SheetContent>
+                    <SheetHeader>
+                      <SheetTitle>History</SheetTitle>
+                      <SheetDescription>
+                        History...
+                      </SheetDescription>
+                    </SheetHeader>
+
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">
+                          Name
+                        </Label>
+                        <Input id="name" value="Pedro Duarte" className="col-span-3" />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="username" className="text-right">
+                          Username
+                        </Label>
+                        <Input id="username" value="@peduarte" className="col-span-3" />
+                      </div>
+                    </div>
+                    <SheetFooter>
+                      <SheetClose asChild>
+                        <Button type="submit">Save changes</Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
               </div>
 
               <EditorActions />
