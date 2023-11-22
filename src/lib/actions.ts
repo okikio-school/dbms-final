@@ -108,6 +108,7 @@ export const getRelevantPosts = cache(async function getRelevantPosts(userId : s
     type: follows.type,
     author: users.name,
     version: posts.version,
+    date: posts.publishedDate,
   }).from(posts)
     .innerJoin(tagsToPosts, eq(posts.postId, tagsToPosts.postId))
     .innerJoin(tags, eq(tags.tagId, tagsToPosts.tagId))
@@ -127,6 +128,7 @@ export const getRelevantPosts = cache(async function getRelevantPosts(userId : s
     type: follows.type,
     author: users.name,
     version: posts.version,
+    date: posts.publishedDate,
   }).from(posts)
     .innerJoin(users, eq(users.userId, posts.userId))
     .innerJoin(follows, eq(follows.entityId, users.userId))

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { AspectRatio } from "./ui/aspect-ratio";
-import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import Image from 'next/image'
+import { Badge } from "./ui/badge";
 
 export function PostCard({title, author, postID, versionID, ratio} : {title: string | null, author: string | null, ratio: number | undefined, postID : string, versionID : string}) {
   return (
@@ -27,7 +27,7 @@ export function PostCard({title, author, postID, versionID, ratio} : {title: str
   )
 }
 
-export function PostItem({title, author, postID, versionID} : {title: string | null, author: string | null, postID : string, versionID : string}) {
+export async function PostItem({title, author, postID, versionID, date} : {title: string | null, author: string | null, postID : string, versionID : string, date : string }) {
   return (
     <Link href={"/read?p=" + postID + "~" + versionID}>
       <Card className="">
@@ -42,13 +42,16 @@ export function PostItem({title, author, postID, versionID} : {title: string | n
                     />
                 </AspectRatio>
             </div>
-            <div className="col-span-4">
-                <div className="grid grid-rows-5 p-4">
-                    <div className="row-span-3">
+            <div className="col-span-5">
+                <div className="grid grid-rows-4 p-4">
+                    <div className="row-span-2">
                         <h2>{title}</h2>
                     </div>
-                    <div className="row-span-2">
+                    <div className="row-span-1">
                         <span>{author}</span>
+                    </div>
+                    <div className="row-span-1">
+                        <span>{date}</span>
                     </div>
                 </div>
             </div>

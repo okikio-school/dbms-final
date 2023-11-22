@@ -19,7 +19,7 @@ export function PostsList({ initialList, userID }: { initialList: Awaited<Return
         list?.map((x) => { 
           let version = "";
           if (!x.version) {version = "0"} else {version = x.version.toString()}
-          return <PostItem key={x.postID} author={x.author} title={x.title} postID={x.postID} versionID={version}/>
+          return <PostItem key={x.postID} author={x.author} title={x.title} postID={x.postID} versionID={version} date={x.date.toDateString()}/>
         })
       }
     </>
