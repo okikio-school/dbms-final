@@ -39,39 +39,19 @@ export const authOptions: Omit<AuthOptions, "adapter"> & { adapter: typeof adapt
           user
         })
         return { ...user, id: user.userId, email: user.email };
-
-        // You need to provide your own logic here that takes the credentials
-        // submitted and returns either a object representing a user or value
-        // that is false/null if the credentials are invalid.
-        // e.g. return { id: 1, name: 'J Smith', email: 'jsmith@example.com' }
-        // You can also use the `req` object to obtain additional parameters
-        // (i.e., the request IP address)
-        // const res = await fetch("/your/endpoint", {
-        //   method: 'POST',
-        //   body: JSON.stringify(credentials),
-        //   headers: { "Content-Type": "application/json" }
-        // })
-        // const user = await res.json()
-
-        // // If no error and we have user data, return it
-        // if (res.ok && user) {
-        //   return user
-        // }
-        // // Return null if user data could not be retrieved
-        // return null
-        // Return user object on successful authentication
-        // return { id: user.id + "", email: user.email };
       },
     }),
     // ...add more providers here
   ],
   callbacks: {
-
-    async session({ session, token }) {
-      // session.user.accessToken = token.accessToken;
+    async session({ session, token, user }) {
+      if (user) { 
+        session.user.id = user.userId;
+      }
       console.log({
         session, 
-        token
+        token,
+        user
       })
 
       return session;
