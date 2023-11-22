@@ -53,6 +53,7 @@
     "@react-email/render": "^0.0.9",
     "@react-email/tailwind": "0.0.12",
     "@react-email/text": "0.0.6",
+    "@tailwindcss/typography": "^0.5.10",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
