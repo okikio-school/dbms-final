@@ -10,8 +10,8 @@ export function PostsList({ initialList }: { initialList: Awaited<ReturnType<typ
   }, { fallbackData: initialList })
  
   if (error) return <div>Failed to load</div>;
-    if (isLoading && (!list || list.length <= 0)) return <div>Loading...</div>;
-    if (!isLoading && (!list || list.length <= 0)) return <div>Failed to load</div>;
+  if (isLoading && (!list || list.length <= 0)) return <div>Loading...</div>;
+  if (!isLoading && (!list || list.length <= 0)) return <div>Failed to load</div>;
 
   return (
     <>
@@ -19,7 +19,7 @@ export function PostsList({ initialList }: { initialList: Awaited<ReturnType<typ
         list?.map((x) => { 
           let version = "";
           if (!x.version) {version = "0"} else {version = x.version.toString()}
-          return <PostItem key={x.id} author={x.author} title={x.title} postID={x.id} versionID={version}/>
+          return <PostItem key={x.id} author={x.author} title={x.title} postID={x.id} versionID={version} date={x.date.toDateString()}/>
         })
       }
     </>
