@@ -5,13 +5,13 @@ import { PostItem } from "./post-card";
 import useSWR from 'swr'
 
 export function PostsList({ initialList, userID }: { initialList: Awaited<ReturnType<typeof getRelevantPosts>>, userID : string}) {
-  const { data: list, error, isLoading } = useSWR('/api/list-posts', async () => {
+  const { data: list, error, isLoading } = useSWR('/api/list-relevant-posts', async () => {
     return await getRelevantPosts(userID);
   }, { fallbackData: initialList })
  
   if (error) return <div>Failed to load</div>;
-  if (isLoading && (!list || list.length <= 0)) return <div>Loading...</div>;
-  if (!isLoading && (!list || list.length <= 0)) return <div>Failed to load</div>;
+  if (isLoading && (!list || list.length <= 0)) return (<div>Loading...</div>);
+  if (!isLoading && (!list || list.length <= 0)) return (<div>Failed to load</div>);
 
   return (
     <>
