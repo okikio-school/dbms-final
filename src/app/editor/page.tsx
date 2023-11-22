@@ -11,15 +11,12 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
-import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import {
   Tabs,
-  TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
 
 import dynamic from "next/dynamic";
 import { EditorSave } from "@/components/editor/save";
@@ -32,7 +29,7 @@ import Markdown from "react-markdown";
 const Editor = dynamic(() => import("@/components/editor.tsx"), { ssr: false });
 
 export default function EditorPage() {
-  // protectClient();
+  protectClient();
 
   // Stores the editor's contents as Markdown.
   const [markdown, setMarkdown] = useState<string>("");
@@ -86,7 +83,7 @@ export default function EditorPage() {
           defaultValue={mode}
           className="flex-1"
           onValueChange={(value) => {
-            setMode(value);
+            setMode(value as "edit" | "split" | "preview");
           }}
         >
           <div className="container h-full px-4 py-6">
@@ -241,27 +238,9 @@ export default function EditorPage() {
                     <EditorSave />
                   </div>
                 </div>
-
-                {/* <ModelSelector types={types} models={models} />
-                <TemperatureSelector defaultValue={[0.56]} />
-                <MaxLengthSelector defaultValue={[256]} />
-                <TopPSelector defaultValue={[0.9]} /> */}
               </div>
 
               <div className="md:order-1">
-                {/* <div className="mt-0 border-0 p-0">
-                  <div className="flex flex-col h-full space-y-2">
-                    <div className={cn(
-                      "w-full max-w-full rounded-md border border-input bg-background text-sm",
-                      "ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                      "py-2 md:py-6 min-h-[40px] md:min-h-[700px] lg:min-h-[700px]",
-                      "max-w-full w-full h-full min-h-[300px] lg:min-h-[700px] xl:min-h-[700px]"
-                    )}>
-                      <Editor setMarkdown={setMarkdown} />
-                    </div>
-                  </div>
-                </div> */}
-
                 <div className="mt-0 border-0 p-0">
                   <div className="flex flex-col space-y-2">
                     <div className={cn(
