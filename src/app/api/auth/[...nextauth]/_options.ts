@@ -47,6 +47,8 @@ export const authOptions: Omit<AuthOptions, "adapter"> & { adapter: typeof adapt
     async session({ session, token, user }) {
       if (user) { 
         session.user.id = user.userId;
+        session.user.bio = user.bio;
+        session.user.image = user.image;
       }
       console.log({
         session, 
