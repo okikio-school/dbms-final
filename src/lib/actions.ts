@@ -18,9 +18,9 @@ const usersprep = db.select().from(users).orderBy(users.userId).prepare("list_us
 
 //all posts
 const postsprep = db.select({
-  id: posts.postId, 
-  title: posts.title, 
-  author: users.name, 
+  id: posts.postId,
+  title: posts.title,
+  author: users.name,
   date: posts.publishedDate,
   version: posts.version,
 }).from(posts)
@@ -88,7 +88,7 @@ export const getPosts = cache(async function getPosts() {
 
 
 //relevant posts
-export const getRelevantPosts = cache(async function getRelevantPosts(userId : string) {
+export const getRelevantPosts = cache(async function getRelevantPosts(userId: string) {
 
   /*SELECT f.follower_id, p.post_id, p.title, t.tag_id AS followed_id, 
     t.name AS followed_name, f.type AS follow_type
@@ -120,7 +120,7 @@ export const getRelevantPosts = cache(async function getRelevantPosts(userId : s
     .where(and(
       eq(follows.type, 'tag'),
       eq(follows.followerId, userId),
-  ));
+    ));
 
   const userfollowsprep = db.select({
     follower: follows.followerId,
@@ -138,19 +138,19 @@ export const getRelevantPosts = cache(async function getRelevantPosts(userId : s
     .where(and(
       eq(follows.type, 'user'),
       eq(follows.followerId, userId),
-  ));
+    ));
 
   return await union(tagfollowsprep, userfollowsprep);
 })
 
 //my posts
-export const getMyPosts = cache(async function getMyPosts({userId} : {userId:string}) {
+export const getMyPosts = cache(async function getMyPosts({ userId }: { userId: string }) {
   const mypostsprep = db.select().from(posts).where(eq(posts.userId, userId)).orderBy(desc(posts.publishedDate));
   return await mypostsprep.execute();
 })
 
 //post content
-export const getPostContent = cache(async function getPostContent(postID : string, versionID : number) {
+export const getPostContent = cache(async function getPostContent(postID: string, versionID: number) {
   const postcontentprep = db.select({
     content: contentVersions.content,
     title: posts.title,
@@ -165,7 +165,7 @@ export const getPostContent = cache(async function getPostContent(postID : strin
         eq(posts.version, contentVersions.versionId),
         eq(posts.postId, postID),
         eq(contentVersions.versionId, versionID)
-        )
+      )
     );
   return await postcontentprep.execute();
 })
@@ -422,63 +422,155 @@ interface NewPost {
   userId: string,
 }
 
-export const newPost = async function newPost({ userId, title, type, content, publishedStatus, publishedDate, updatedDate, isFeatured }: NewPost) {
-  try { 
+export const newPost = async function newPost({ userId, title, description, type, content, publishedStatus, publishedDate, updatedDate, isFeatured }: NewPost) {
+  try {
     return await db.transaction(async (tx) => {
       const postId = crypto.randomUUID();
-      const [post] = await tx.insert(posts).values({
-        postId,
-        userId,
-        title,
-        publishedDate: new Date(publishedDate),
-        version: 1,
-      }).returning();
+      let [post] = await tx
+        .insert(posts)
+        .values({
+          postId,
+          userId,
+          title,
+          publishedDate: new Date(publishedDate),
+          version: -1,
+        })
+        .returning();
+
+      console.log({
+        post
+      })
 
       const [contentVersion] = await tx
         .insert(contentVersions)
         .values({
           postId: post.postId,
-          versionId: post.version!,
           content: {
             markdown: content,
+          },
+          metadata: {
+            description,
+            title,
           },
           updateAt: new Date(updatedDate),
           isFeatured,
           publishedStatus,
           type,
-        }).returning();
+        })
+        .returning();
 
-      // for (const tag of tags) {
-      //   const [tagList] = await tx.select().from(tags).where(eq(tags.name, tag)).execute();
-      //   let tagId = '';
-      //   if (tagList) {
-      //     tagId = tagList.tagId;
-      //   } else {
-      //     const [tag] = await tx.insert(tags).values({
-      //       tagId: crypto.randomUUID(),
-      //       name: tag,
-      //     }).returning();
-      //     tagId = tag.tagId;
-      //   }
-
-      //   await tx.insert(tagsToPosts).values({
-      //     tagId,
-      //     postId: post.postId,
-      //   }).returning();
-      // }
+      ([post] = await tx.update(posts)
+        .set({ version: contentVersion.versionId })
+        .where(eq(posts.postId, post.postId))
+        .returning());
 
       return post;
     })
-  } catch (e) { 
+  } catch (e) {
+    console.warn(e)
+  }
+}
+
+interface SavePost {
+  title: string,
+  description?: string,
+  content: string,
+  publishedStatus: boolean,
+  isFeatured: boolean,
+  metadata?: {
+    title: string,
+    description?: string,
+  },
+  type: 'post' | 'page',
+  publishedDate: string,
+  updatedDate: string,
+  postId: string,
+  versionId: number,
+}
+
+export const savePost = async function savePost({ postId, versionId, title, description, type, content, publishedStatus, publishedDate, updatedDate, isFeatured }: SavePost) {
+  try {
+    return await db.transaction(async (tx) => {
+      const [post] = await tx
+        .update(posts)
+        .set({
+          title,
+          publishedDate: new Date(publishedDate)
+        })
+        .where(and(
+          eq(posts.postId, postId),
+          eq(posts.version, versionId),
+        ))
+        .returning();
+
+      const [contentVersion] = await tx
+        .update(contentVersions)
+        .set({
+          content: {
+            markdown: content,
+          },
+          updateAt: new Date(updatedDate),
+          metadata: {
+            description,
+            title,
+          },
+          isFeatured,
+          publishedStatus,
+          type,
+        })
+        .where(and(
+          eq(contentVersions.postId, postId),
+          eq(contentVersions.versionId, versionId),
+        ))
+        .returning();
+
+      return post;
+    })
+  } catch (e) {
+    console.warn(e)
+  }
+}
+
+export const newPostVerion = async function newPostVerion({ postId, versionId, title, description, type, content, publishedStatus, publishedDate, updatedDate, isFeatured }: SavePost) {
+  try {
+    return await db.transaction(async (tx) => {
+      const [contentVersion] = await tx
+        .insert(contentVersions)
+        .values({
+          postId: postId,
+          content: {
+            markdown: content,
+          },
+          metadata: {
+            description,
+            title,
+          },
+          updateAt: new Date(updatedDate),
+          isFeatured,
+          publishedStatus,
+          type,
+        })
+        .returning();
+
+      const [post] = await tx.update(posts)
+        .set({ version: contentVersion.versionId })
+        .where(eq(posts.postId, postId))
+        .returning();
+
+      return post;
+    })
+  } catch (e) {
     console.warn(e)
   }
 }
 
 export const getPost = cache(async function getPost({ postId, versionId }: { postId: string, versionId: number }) {
-  try { 
+  try {
     const [post] = await db.select({
       id: posts.postId,
       title: posts.title,
+      type: contentVersions.type,
+      metadata: contentVersions.metadata,
       content: contentVersions.content,
       isFeatured: contentVersions.isFeatured,
       publishedStatus: contentVersions.publishedStatus,
@@ -490,34 +582,32 @@ export const getPost = cache(async function getPost({ postId, versionId }: { pos
       .from(posts)
       .leftJoin(contentVersions, and(
         eq(contentVersions.postId, posts.postId),
-        eq(contentVersions.versionId, versionId)
       ))
       .where(and(
         eq(posts.postId, postId),
-        eq(contentVersions.isFeatured, true),
-        eq(contentVersions.publishedStatus, true)
+        eq(contentVersions.versionId, versionId),
       ))
       .execute();
 
     return post;
-  } catch (e) { 
+  } catch (e) {
     console.warn(e)
   }
 })
 
 export const listPostVersions = cache(async function listPostVersions({ postId }: { postId: string }) {
-  try { 
-      const versions = await db.select({
-        version: contentVersions.versionId,
-        updatedAt: contentVersions.updateAt,
-      })
-        .from(contentVersions)
-        .where(eq(contentVersions.postId, postId))
-        .orderBy(desc(contentVersions.updateAt))
-        .execute();
+  try {
+    const versions = await db.select({
+      version: contentVersions.versionId,
+      updatedAt: contentVersions.updateAt,
+    })
+      .from(contentVersions)
+      .where(eq(contentVersions.postId, postId))
+      .orderBy(desc(contentVersions.updateAt))
+      .execute();
 
     return versions;
-  } catch (e) { 
+  } catch (e) {
     console.warn(e)
   }
 })

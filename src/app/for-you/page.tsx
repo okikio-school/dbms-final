@@ -5,16 +5,11 @@ import { PostsList } from "@/components/foryou-list";
 import { getServerSession, type AuthOptions } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/_options";
 
-const usersession = await getServerSession(authOptions as unknown as AuthOptions)
-const userid = usersession?.user.id;
-
-const initialFeed = await getRelevantPosts(userid!);
-
 export default async function ForYouPage() {
   const usersession = await getServerSession(authOptions as unknown as AuthOptions)
-  const userid2 = usersession?.user.id;
+  const userid = usersession?.user.id;
 
-  const initialFeed = await getRelevantPosts(userid2!);
+  const initialFeed = await getRelevantPosts(userid!);
 
   return (
     <div className="pt-24 px-2">

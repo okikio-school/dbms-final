@@ -50,11 +50,11 @@ export const authOptions: Omit<AuthOptions, "adapter"> & { adapter: typeof adapt
         session.user.bio = user.bio;
         session.user.image = user.image;
       }
-      console.log({
-        session, 
-        token,
-        user
-      })
+      // console.log({
+      //   session, 
+      //   token,
+      //   user
+      // })
 
       return session;
     },

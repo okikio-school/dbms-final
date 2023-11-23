@@ -22,8 +22,8 @@ import { Input } from "@/components/ui/input";
 
 import dynamic from "next/dynamic";
 
-import { SplitSquareHorizontal } from "lucide-react";
-import { useState } from "react";
+import { Check, ChevronsUpDown, SplitSquareHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import Markdown from "react-markdown";
 import { Label } from "@/components/ui/label";
@@ -39,13 +39,19 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
+
 import useFormPersist from 'react-hook-form-persist'
-import { newPost } from "@/lib/actions";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const Editor = dynamic(() => import("@/components/editor.tsx"), { ssr: false });
+import { getPost, newPost, savePost } from "@/lib/actions";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { toast } from "../ui/use-toast";
+import Link from "next/link";
+
+const Editor = dynamic(() => import("./editor.tsx"), { ssr: false });
 
 const FormSchema = z.object({
   title: z.string(),
@@ -62,15 +68,18 @@ const FormSchema = z.object({
   updatedDate: z.date().optional(),
 });
 
-export default function EditorPage() {
-  // protectClient();
-  const session = useSession();
 
+const publishStatuses = [
+  { label: "Publish", value: true },
+  { label: "Draft", value: false },
+] as const
+
+export default function EditorPage({ postId, versionId, initialPost }: { postId: string, versionId: number, initialPost: z.infer<typeof FormSchema>  }) {
   // Stores the editor's contents as Markdown.
   const [mode, setMode] = useState<"edit" | "split" | "preview">("edit");
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
+    defaultValues: Object.assign({}, {
       title: "",
       description: "",
       content: "",
@@ -81,8 +90,8 @@ export default function EditorPage() {
         description: "",
       },
       type: "post",
-      publishedDate: new Date(),
-    }
+      publishedDate: new Date()
+    }, initialPost)
   });
 
   // useFormPersist("editorState", {
@@ -93,9 +102,9 @@ export default function EditorPage() {
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     console.log(data);
-      
+
     (async () => {
-      const post = await newPost({ 
+      const post = await savePost({
         title: data.title,
         description: data.description,
         content: data.content,
@@ -105,14 +114,17 @@ export default function EditorPage() {
         type: data.type,
         publishedDate: data.publishedDate!.toString(),
         updatedDate: new Date().toString(),
-        userId: session.data?.user.id!,
+        postId,
+        versionId
       });
       console.log({
         post
       })
 
-      if (post && post.postId && typeof post.version === "number") {
-        redirect(`/post/${post.postId}/${post.version}`)
+      if (!(post && post.postId && typeof post.version === "number")) {
+        toast({ title: "Something went wrong saving your post. Please try again." });
+      } else { 
+        toast({ title: "Saved!" });
       }
       // console.log(await listPostVersions())
 
@@ -132,16 +144,10 @@ export default function EditorPage() {
               <h2 className="text-lg font-semibold max-w-xs truncate">{(form.watch("title") || "New Post")}</h2>
               <div className="flex-grow"></div>
               <div className="flex space-x-2">
-                <Button variant="outline">Save</Button>
 
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="outline" onClick={(e) => {
-                      (async () => {
-                    // console.log(await listPostVersions())
-
-                      })()
-                    }}>
+                    <Button variant="outline">
                       <span className="sr-only">Show history</span>
                       <CounterClockwiseClockIcon className="h-4 w-4" />
                     </Button>
@@ -178,7 +184,13 @@ export default function EditorPage() {
                   </SheetContent>
                 </Sheet>
 
-                <Button type="submit">Publish</Button>
+                <Button variant="outline" asChild>
+                  <Link href={`/post/${postId}/${versionId}`}>
+                    Preview
+                  </Link>
+                </Button>
+                <Button type="submit" className={cn({ hidden: form.watch("publishedStatus") })}>Save</Button>
+                <Button type="submit" className={cn({ hidden: !form.watch("publishedStatus") })}>Publish</Button>
                 {/* <EditorActions /> */}
               </div>
             </div>
@@ -202,7 +214,6 @@ export default function EditorPage() {
                         "min-h-[1em] rounded-md bg-background px-3 py-2 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
                         "h-[calc(1lh+1rem)]"
                       )}
-                      // onChange={(e) => setTitle(e.target.value)}
                       {...field}
                     />
                   </FormControl>
@@ -392,13 +403,61 @@ export default function EditorPage() {
                       control={form.control}
                       name="publishedStatus"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
+                        <FormItem className="flex flex-col gap-3 space-y-0 py-2">
+                          <FormLabel>
+                            Status
+                          </FormLabel>
+
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  role="combobox"
+                                  className={cn(
+                                    "w-[150px] flex items-center",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {publishStatuses.find(
+                                      (language) => Boolean(language.value) === field.value
+                                    )?.label ?? "+ Set status"}
+                                  <div className="flex-grow"></div>
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0">
+                              <Command>
+                                <CommandInput placeholder="Change status..." />
+                                <CommandList>
+                                  <CommandEmpty>No results found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {publishStatuses.map((status) => (
+                                      <CommandItem
+                                        key={status.label}
+                                        value={status.label}
+                                        onSelect={() => {
+                                          form.setValue("publishedStatus", Boolean(status.value))
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            status.value === field.value
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                        {status.label}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
                         </FormItem>
                       )}
                     />
