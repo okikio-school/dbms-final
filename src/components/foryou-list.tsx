@@ -8,10 +8,10 @@ import { useSession } from "next-auth/react";
 export function PostsList({ initialList, userID }: { initialList: Awaited<ReturnType<typeof getRelevantPosts>>, userID : string}) {
   
   const usersession = useSession();
-  const userid2 = usersession.data?.user.id;
+  const userid = usersession.data?.user?.id ?? userID;
 
   const { data: list, error, isLoading } = useSWR('/api/list-relevant-posts', async () => {
-    if(!userid2) {return await getRelevantPosts(userID);} else {return await getRelevantPosts(userid2);}
+    return await getRelevantPosts(userid) ?? [];
   }, { fallbackData: initialList })
  
   if (error) {
@@ -19,7 +19,7 @@ export function PostsList({ initialList, userID }: { initialList: Awaited<Return
     return <div>Failed to load</div>
   };
   if (isLoading && (!list || list.length <= 0)) return (<div>Loading...</div>);
-  if (!isLoading && (!list || list.length <= 0)) return (<div>No rows returned</div>);
+  if (!isLoading && (!list || list.length <= 0)) return (<div>No relevant posts...</div>);
 
   return (
     <>
