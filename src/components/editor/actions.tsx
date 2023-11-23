@@ -40,7 +40,7 @@ export function EditorActions() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="secondary">
+          <Button variant="outline">
             <span className="sr-only">Actions</span>
             <DotsHorizontalIcon className="h-4 w-4" />
           </Button>
