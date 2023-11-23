@@ -40,6 +40,10 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import useFormPersist from 'react-hook-form-persist'
+import { newPost } from "@/lib/actions";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Editor = dynamic(() => import("@/components/editor.tsx"), { ssr: false });
 
@@ -60,6 +64,7 @@ const FormSchema = z.object({
 
 export default function EditorPage() {
   // protectClient();
+  const session = useSession();
 
   // Stores the editor's contents as Markdown.
   const [mode, setMode] = useState<"edit" | "split" | "preview">("edit");
@@ -80,16 +85,35 @@ export default function EditorPage() {
     }
   });
 
-  useFormPersist("editorState", {
-    watch: form.watch,
-    setValue: form.setValue,
-    storage: window.localStorage
-  })
+  // useFormPersist("editorState", {
+  //   watch: form.watch,
+  //   setValue: form.setValue,
+  //   storage: globalThis?.localStorage
+  // })
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     console.log(data);
       
     (async () => {
+      const post = await newPost({ 
+        title: data.title,
+        description: data.description,
+        content: data.content,
+        publishedStatus: data.publishedStatus,
+        isFeatured: data.isFeatured,
+        metadata: data.metadata,
+        type: data.type,
+        publishedDate: data.publishedDate!.toString(),
+        updatedDate: new Date().toString(),
+        userId: session.data?.user.id!,
+      });
+      console.log({
+        post
+      })
+
+      if (post && post.postId && typeof post.version === "number") {
+        redirect(`/post/${post.postId}/${post.version}`)
+      }
       // console.log(await listPostVersions())
 
     })()
@@ -363,6 +387,21 @@ export default function EditorPage() {
                         </svg>
                       </TabsTrigger>
                     </TabsList>
+
+                    <FormField
+                      control={form.control}
+                      name="publishedStatus"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
 

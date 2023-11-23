@@ -458,7 +458,7 @@ export const newPost = async function newPost({ userId, title, type, content, pu
       //   }).returning();
       // }
 
-      return { post, contentVersion } ;
+      return post;
     })
   } catch (e) { 
     console.warn(e)
