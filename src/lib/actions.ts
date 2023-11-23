@@ -401,3 +401,120 @@ export const updatePassword = async function updatePassword({ password, tokenId 
     return null;
   }
 }
+
+
+interface NewPost {
+  title: string,
+  description?: string,
+  content: string,
+  publishedStatus: boolean,
+  isFeatured: boolean,
+  metadata?: {
+    title: string,
+    description?: string,
+  },
+  type: 'post' | 'page',
+  publishedDate: string,
+  updatedDate: string,
+  userId: string,
+}
+
+export const newPost = async function newPost({ userId, title, type, content, publishedStatus, publishedDate, updatedDate, isFeatured }: NewPost) {
+  try { 
+    return await db.transaction(async (tx) => {
+      const postId = crypto.randomUUID();
+      const [post] = await tx.insert(posts).values({
+        postId,
+        userId,
+        title,
+        publishedDate: new Date(publishedDate),
+        version: 1,
+      }).returning();
+
+      const [contentVersion] = await tx
+        .insert(contentVersions)
+        .values({
+          postId: post.postId,
+          versionId: post.version!,
+          content: {
+            markdown: content,
+          },
+          updateAt: new Date(updatedDate),
+          isFeatured,
+          publishedStatus,
+          type,
+        }).returning();
+
+      // for (const tag of tags) {
+      //   const [tagList] = await tx.select().from(tags).where(eq(tags.name, tag)).execute();
+      //   let tagId = '';
+      //   if (tagList) {
+      //     tagId = tagList.tagId;
+      //   } else {
+      //     const [tag] = await tx.insert(tags).values({
+      //       tagId: crypto.randomUUID(),
+      //       name: tag,
+      //     }).returning();
+      //     tagId = tag.tagId;
+      //   }
+
+      //   await tx.insert(tagsToPosts).values({
+      //     tagId,
+      //     postId: post.postId,
+      //   }).returning();
+      // }
+
+      return post;
+    })
+  } catch (e) { 
+    console.warn(e)
+  }
+}
+
+export const getPost = cache(async function getPost({ postId, versionId }: { postId: string, versionId: number }) {
+  try { 
+    const [post] = await db.select({
+      id: posts.postId,
+      title: posts.title,
+      content: contentVersions.content,
+      isFeatured: contentVersions.isFeatured,
+      publishedStatus: contentVersions.publishedStatus,
+      publishedDate: posts.publishedDate,
+      updatedAt: contentVersions.updateAt,
+      version: contentVersions.versionId,
+      userId: posts.userId,
+    })
+      .from(posts)
+      .leftJoin(contentVersions, and(
+        eq(contentVersions.postId, posts.postId),
+        eq(contentVersions.versionId, versionId)
+      ))
+      .where(and(
+        eq(posts.postId, postId),
+        eq(contentVersions.isFeatured, true),
+        eq(contentVersions.publishedStatus, true)
+      ))
+      .execute();
+
+    return post;
+  } catch (e) { 
+    console.warn(e)
+  }
+})
+
+export const listPostVersions = cache(async function listPostVersions({ postId }: { postId: string }) {
+  try { 
+      const versions = await db.select({
+        version: contentVersions.versionId,
+        updatedAt: contentVersions.updateAt,
+      })
+        .from(contentVersions)
+        .where(eq(contentVersions.postId, postId))
+        .orderBy(desc(contentVersions.updateAt))
+        .execute();
+
+    return versions;
+  } catch (e) { 
+    console.warn(e)
+  }
+})

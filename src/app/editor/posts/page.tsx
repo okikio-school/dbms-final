@@ -8,11 +8,10 @@ export default async function MyPostsPage() {
 
     const usersession = await getServerSession(authOptions as unknown as AuthOptions)
     const userid = usersession?.user.id;
-
+    
     return (
         <div className="p-20">
             <h1>My Posts</h1>
             <MyPostsListCard userID={userid!} />
         </div>
     );
-}
