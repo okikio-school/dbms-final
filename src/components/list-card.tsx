@@ -60,12 +60,14 @@ export function MyVersionsListCard({ userID, postID }: { userID: string | null ,
                 list?.map((x) => { 
                     return (
                     <>
-                        <p key={x.id}>
-                            { x.title } - Version {x.id}
-                        </p>
+                        <Link href={"/editor/versions/" + encodeURIComponent(postID) + "/" + encodeURIComponent(x.id)} legacyBehavior passHref>
+                            <p key={x.id}>
+                                { x.title } - Version {x.id}
+                            </p>
+                        </Link>
                         <Separator className="my-2"/>
                     </>
-                    )
+                    );
                 })
             }
         </CardContent>
