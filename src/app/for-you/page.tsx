@@ -10,13 +10,13 @@ const userID = "6133925e-359f-491e-bb0c-fab9e6c090e8";
 const usersession = await getServerSession(authOptions as unknown as AuthOptions)
 const userid2 = usersession?.user.id;
 
-const initialFeed = await getRelevantPosts(userID);
+const initialFeed = await getRelevantPosts(userid2!);
 
 export default async function ForYouPage() {
 
   return (
     <div className="pt-24 px-2">
-      <PostsList initialList={initialFeed} userID={userID}/>
+      <PostsList initialList={initialFeed} userID={userid2!}/>
     </div>
   );
 }

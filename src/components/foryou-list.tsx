@@ -11,7 +11,7 @@ export function PostsList({ initialList, userID }: { initialList: Awaited<Return
   const userid2 = usersession.data?.user.id;
 
   const { data: list, error, isLoading } = useSWR('/api/list-relevant-posts', async () => {
-    if(!userid2) {return await getRelevantPosts(userID);} else {return await getRelevantPosts(userID);}
+    if(!userid2) {return await getRelevantPosts(userID);} else {return await getRelevantPosts(userid2);}
   }, { fallbackData: initialList })
  
   if (error) {

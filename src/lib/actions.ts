@@ -136,7 +136,7 @@ export const getRelevantPosts = cache(async function getRelevantPosts(userId : s
     .innerJoin(users, eq(users.userId, posts.userId))
     .innerJoin(follows, eq(follows.entityId, users.userId))
     .where(and(
-      eq(follows.type, 'tag'),
+      eq(follows.type, 'user'),
       eq(follows.followerId, userId),
   ));
 
