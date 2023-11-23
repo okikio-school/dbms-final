@@ -172,7 +172,10 @@ export const getPostContent = cache(async function getPostContent(postID : strin
 
 //list versions
 export const getMyVersions = cache(async function getMyVersions({userId, postId} : {userId:string, postId : string}) {
-  const myversionsprep = db.select().from(contentVersions).innerJoin(posts, eq(posts.postId, contentVersions.postId)).where(and(eq(posts.userId, userId), eq(contentVersions.postId, postId))).orderBy(desc(contentVersions.updateAt));
+  const myversionsprep = db.select({
+    title: posts.title,
+    id: contentVersions.versionId,
+  }).from(contentVersions).innerJoin(posts, eq(posts.postId, contentVersions.postId)).where(and(eq(posts.userId, userId), eq(contentVersions.postId, postId))).orderBy(desc(contentVersions.updateAt));
   return await myversionsprep.execute();
 })
 
