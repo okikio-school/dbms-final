@@ -4,9 +4,10 @@ import { faker } from "@faker-js/faker";
 import { timeStamp } from "console";
 import { eq } from "drizzle-orm";
 import { argv } from "process";
+import { randomUUID } from "crypto";
 
 export async function NewPost(userID : string, title : string) {
-    const postID = crypto.randomUUID()
+    const postID = randomUUID()
     await db.transaction(async (tx) => {
         const [post] = await tx.insert(posts).values({
         postId: postID,
